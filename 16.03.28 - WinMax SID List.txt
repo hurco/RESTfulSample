@@ -1,0 +1,127 @@
+Cycle Status:
+#define SID_RT_PROGRAM_RUNNING    1552211 // 0=no part program is running  1=part program is running 
+#define SID_RT_ALL_MOTION_STOPPED 1552035 // 0=one or more axes are moving 1=all axes are not moving
+
+Alarm Status:
+This data exists but is not centralized in the system and therefore can’t be reported through a SID at this time
+
+Alarm Codes:
+This data exists but is not centralized in the system and therefore can’t be reported through a SID at this time
+
+Part Counter:
+#define SID_RT_PART_COUNT  1568848 
+
+Program Number and Block Number:
+#define SID_WINMAX_RUN_PROGRAM_NAME                   5504  
+#define SID_WINMAX_RUN_PROGRAM_BLOCK_NUMBER 4053
+
+Spindle Load:
+Not all machines report a spindle load, but if it exists it can be accessed through the SID below
+#define SID_RT_SPINDLE_LOAD   1584208
+
+Comments:
+This data does not exist in the system
+
+Control Power:
+#define SID_RT_EMERGENCY_STOP        1552000 
+#define SID_RT_CONROL_POWER          1552001
+#define SID_RT_SERVO_POWER             1552002
+
+Spindle:
+#define SID_RT_SPINDLE_OVERRIDE_PERCENTAGE 1584000
+#define SID_RT_SPINDLE_TOOL_RPM                       1584064
+
+Feedrate:
+#define SID_RT_FEEDRATE_OVERRIDE_PERCENTAGE 1584032
+#define SID_RT_VECTOR_FEEDRATE                            1584080
+
+Rapid:
+#define SID_RT_RAPID_OVERRIDE_PERCENTAGE    1584048
+
+
+
+Status SIDs
+SID_CURRENT_PROGRAM_STATUS
+  PROGRAMSTATUS_UNINITIALIZED = 0,
+  PROGRAMSTATUS_STARTED = 1,
+  PROGRAMSTATUS_COMPLETED_SUCCESSFUL = 2,
+  PROGRAMSTATUS_COMPLETED_ERROR = 3,
+  PROGRAMSTATUS_COMPLETED_ABORT = 4
+
+SID_RT_ALL_MODE_JOG_ENABLE 
+Values:	0 = Jogging can only occur during manual and manual setup modes
+		1 = Jogging can occur in any machine mode
+
+SID_RT_EMERGENCY_STOP
+
+SID_RT_MACHINE_MODE_GET 
+Valid Values:	
+0 = Diagnostic Mode                          
+1 = Idle Mode                          
+2 = Manual Mode                        
+3 = Manual Setup Mode
+4 = Auto Prep Mode
+5 = Auto Run Mode
+6 = Interrupt Cycle Mode
+
+SID_WINMAX_RUN_PROGRAM_BLOCK_NUMBER
+SID_WINMAX_RUN_PROGRAM_NAME
+SID_WINMAX_RUN_PROGRAM_TYPE
+SID_WINMAX_RUNNING_PROGRAM_PATH
+SID_RT_ACTIVE_PALLET_NUMBER
+
+
+Axes positions and offsets
+Axes loads
+DRO machine positions (Machine, Part, Workpiece/Transform Plane, Distance to go)
+these can be had through a wide arrays of SIDS , though they update very fast, and can provide crippling traffic
+SID_WINMAX_RUNNING_PART_RELATIVE_POS_X                 
+SID_WINMAX_RUNNING_PART_RELATIVE_POS_Y                   
+SID_WINMAX_RUNNING_PART_RELATIVE_POS_Z                   
+SID_WINMAX_RUNNING_PART_RELATIVE_POS_A                   
+SID_WINMAX_RUNNING_PART_RELATIVE_POS_B                  
+SID_WINMAX_RUNNING_PART_RELATIVE_POS_C                   
+SID_WINMAX_RUNNING_PART_RELATIVE_POS_U                  
+SID_WINMAX_RUNNING_LOCAL_POS_X        //transform plane                  
+SID_WINMAX_RUNNING_LOCAL_POS_Y        //transform plane  
+SID_WINMAX_RUNNING_LOCAL_POS_Z        //transform plane  
+SID_WINMAX_RUNNING_WORKPIECE_POS_X                       
+SID_WINMAX_RUNNING_WORKPIECE_POS_Y                       
+SID_WINMAX_RUNNING_WORKPIECE_POS_Z                      
+SID_WINMAX_DRO_VMACHINE_RELATIVE_X                      
+SID_WINMAX_DRO_VMACHINE_RELATIVE_Y                      
+SID_WINMAX_DRO_VMACHINE_RELATIVE_Z                      
+SID_WINMAX_DRO_VMACHINE_RELATIVE_A                       
+SID_WINMAX_DRO_VMACHINE_RELATIVE_B                       
+SID_WINMAX_DRO_VMACHINE_RELATIVE_C                       
+SID_RT_MACHINE_POSITION_X                            
+SID_RT_MACHINE_POSITION_Y                            
+SID_RT_MACHINE_POSITION_Z                             
+SID_RT_MACHINE_POSITION_S                            
+SID_RT_MACHINE_POSITION_A                             
+SID_RT_MACHINE_POSITION_B                             
+SID_RT_MACHINE_POSITION_C                            
+SID_RT_MACHINE_POSITION_W                            
+SID_RT_MACHINE_POSITION_U                             
+SID_RT_DISTANCE_TO_GO_X                               
+SID_RT_DISTANCE_TO_GO_Y                               
+SID_RT_DISTANCE_TO_GO_Z                              
+SID_RT_DISTANCE_TO_GO_A                               
+SID_RT_DISTANCE_TO_GO_B                               
+SID_RT_DISTANCE_TO_GO_C                               
+SID_RT_DISTANCE_TO_GO_W                               
+
+
+Tool info SIDs:
+
+SID_RT_TOOL_IN_SPINDLE_STATUS
+Valid Values:    
+0 = MANUAL
+1 = AUTO
+
+SID_RT_TOOL_IN_SPINDLE
+ 
+Tool in spindle Life
+SID_WINMAX_TOOL_LIFE_MONITORING_STATUS                   
+SID_WINMAX_TOOL_LIFE_EXCEEDED_POST_WARNING               
+SID_WINMAX_TOOL_LIFE_EXCEEDED_MARK_DEFECTIVE             
