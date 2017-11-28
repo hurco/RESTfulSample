@@ -1,0 +1,879 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "description": "RESTful api for third party integration with Hurco controls on port 4503 for HTTP and 4504 for HTTPS 4505 is used for callback channels. When opening callback channel STARTTLS will enable SSL, server will respond STARTTLS if accepted. If not using SSL then client should send HELLO instead, server will respond HELLO. Following this the client should send their token.",
+    "version": "1.0.0",
+    "title": "Swagger Hurco Dataservices",
+    "contact": {
+      "email": "support@hurco.com"
+    }
+  },
+  "host": "machine-connect.hurco.com:4504",
+  "basePath": "/",
+  "tags": [
+    {
+      "name": "Connect",
+      "description": "Connecting to the service and requesting an auth token"
+    },
+    {
+      "name": "Doubles",
+      "description": "Operations on Doubles"
+    },
+    {
+      "name": "Strings",
+      "description": "Operations on Strings"
+    },
+    {
+      "name": "Bulks",
+      "description": "Operations on Bulks"
+    },
+    {
+      "name": "Integers",
+      "description": "Operations on Integers"
+    },
+    {
+      "name": "Subscriptions",
+      "description": "Enable and Disable notifications"
+    }
+  ],
+  "schemes": [
+    "https"
+  ],
+  "paths": {
+    "/AuthService/Connect": {
+      "post": {
+        "tags": [
+          "Connect"
+        ],
+        "summary": "request an authentication token used as APIkey for all other requests",
+        "description": "",
+        "operationId": "tokenrequest",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "Username and Password to use",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/LoginCommandData"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful login token provided",
+            "schema": {
+              "$ref": "#/definitions/TokenResponse"
+            }
+          },
+          "405": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
+    "/DataService/String/{SID}": {
+      "get": {
+        "tags": [
+          "Strings"
+        ],
+        "summary": "gets the string value of a given SID",
+        "description": "will return string representations of doubles and ints if SID is of that type",
+        "operationId": "getstringbySID",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "SID",
+            "in": "path",
+            "description": "SID name to get",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/StringCommandData"
+            }
+          },
+          "400": {
+            "description": "Invalid status value"
+          }
+        },
+        "security": [
+          {
+            "api_key": []
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "Strings"
+        ],
+        "summary": "sets the string value of a given SID",
+        "description": "sets the SID to the specified value",
+        "operationId": "setstringbySID",
+        "parameters": [
+          {
+            "name": "SID",
+            "in": "path",
+            "description": "SID name to set",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "Value",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#definitions/StringCommandData"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation"
+          },
+          "400": {
+            "description": "Invalid status value"
+          }
+        },
+        "security": [
+          {
+            "api_key": []
+          }
+        ]
+      }
+    },
+    "/DataService/Double/{SID}": {
+      "get": {
+        "tags": [
+          "Doubles"
+        ],
+        "summary": "gets the double value of a given SID",
+        "description": "will return ints as doubles if SID is int",
+        "operationId": "getdoublebySID",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "SID",
+            "in": "path",
+            "description": "SID name to get",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/DoubleCommandData"
+            }
+          },
+          "400": {
+            "description": "Invalid status value"
+          }
+        },
+        "security": [
+          {
+            "api_key": []
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "Doubles"
+        ],
+        "summary": "sets the double value of a given SID",
+        "description": "sets the SID to the specified value",
+        "operationId": "setdoublebySID",
+        "parameters": [
+          {
+            "name": "SID",
+            "in": "path",
+            "description": "SID name to set",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "Value",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#definitions/DoubleCommandData"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation"
+          },
+          "400": {
+            "description": "Invalid status value"
+          }
+        },
+        "security": [
+          {
+            "api_key": []
+          }
+        ]
+      }
+    },
+    "/DataService/Bulk/{SID}": {
+      "get": {
+        "tags": [
+          "Bulks"
+        ],
+        "summary": "gets the bulk value of a given SID",
+        "description": "will return wrapped Bulk",
+        "operationId": "getbulkbySID",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "SID",
+            "in": "path",
+            "description": "SID name to get",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/BulkWrapper"
+            }
+          },
+          "400": {
+            "description": "Invalid status value"
+          }
+        },
+        "security": [
+          {
+            "api_key": []
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "Bulks"
+        ],
+        "summary": "sets the bulk value of a given SID, needs to be of one of the supported bulk types",
+        "description": "sets the SID to the specified value",
+        "operationId": "setbulkbySID",
+        "parameters": [
+          {
+            "name": "SID",
+            "in": "path",
+            "description": "SID name to set",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "Value",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#definitions/BulkWrapper"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation"
+          },
+          "400": {
+            "description": "Invalid status value"
+          }
+        },
+        "security": [
+          {
+            "api_key": []
+          }
+        ]
+      }
+    },
+    "/DataService/Integer/{SID}": {
+      "get": {
+        "tags": [
+          "Integers"
+        ],
+        "summary": "gets the integer value of a given SID",
+        "description": "will return doubles as ints if SID is int",
+        "operationId": "getintbySID",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "SID",
+            "in": "path",
+            "description": "SID name to get",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/IntegerCommandData"
+            }
+          },
+          "400": {
+            "description": "Invalid status value"
+          }
+        },
+        "security": [
+          {
+            "api_key": []
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "Integers"
+        ],
+        "summary": "sets the integer value of a given SID",
+        "description": "sets the SID to the specified value",
+        "operationId": "setintbySID",
+        "parameters": [
+          {
+            "name": "SID",
+            "in": "path",
+            "description": "SID name to set",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "Value",
+            "required": true,
+            "in": "body",
+            "schema": {
+              "$ref": "#definitions/IntegerCommandData"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation"
+          },
+          "400": {
+            "description": "Invalid status value"
+          }
+        },
+        "security": [
+          {
+            "api_key": []
+          }
+        ]
+      }
+    },
+    "/NotificationService/Subscription/{SID}": {
+      "delete": {
+        "tags": [
+          "Subscriptions"
+        ],
+        "summary": "unsubscribes client from given SID",
+        "description": "disables notifications when this SID is updated, event forces non polled, and datastore forces shared memory checking only",
+        "operationId": "unsubscribeSID",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "SID",
+            "in": "path",
+            "description": "SID name to get",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation"
+          },
+          "400": {
+            "description": "Invalid status value"
+          }
+        },
+        "security": [
+          {
+            "api_key": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "Subscriptions"
+        ],
+        "summary": "subscribes client to given SID",
+        "description": "enables notifications when this SID is updated, event forces non polled, and datastore forces shared memory checking only. Port 4505 is used for callback channels. When opening callback channel STARTTLS will enable SSL, server will respond STARTTLS if accepted. If not using SSL then client should send HELLO instead, server will respond HELLO. Following this the client should send their token.",
+        "operationId": "subscribeSID",
+        "parameters": [
+          {
+            "name": "SID",
+            "in": "path",
+            "description": "SID name to set",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "Value",
+            "required": true,
+            "in": "body",
+            "schema": {
+              "$ref": "#definitions/SubscriptionCommandData"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation"
+          },
+          "400": {
+            "description": "Invalid status value"
+          }
+        },
+        "security": [
+          {
+            "api_key": []
+          }
+        ]
+      }
+    },
+    "/NotificationService/Callback": {
+      "delete": {
+        "tags": [
+          "Subscriptions"
+        ],
+        "summary": "removes a webhook callback for the client",
+        "description": "the webhook will be used for any subscriptions set to mode: Webhook rather than mode: Callback.",
+        "operationId": "removeCallback",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "successful operation"
+          },
+          "400": {
+            "description": "Invalid status value"
+          }
+        },
+        "security": [
+          {
+            "api_key": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "Subscriptions"
+        ],
+        "summary": "adds a webhook callback for the client",
+        "description": "the webhook will be used for any subscriptions set to mode: Webhook rather than mode: Callback, this is an Endpoint that should expect Put requests with the payload being a NotificationData. Port 4505 is used for callback channels. When opening callback channel STARTTLS will enable SSL, server will respond STARTTLS if accepted. If not using SSL then client should send HELLO instead, server will respond HELLO. Following this the client should send their token.",
+        "operationId": "addCallback",
+        "parameters": [
+          {
+            "name": "Value",
+            "required": true,
+            "in": "body",
+            "schema": {
+              "$ref": "#definitions/CallbackCommandData"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation"
+          },
+          "400": {
+            "description": "Invalid status value"
+          }
+        },
+        "security": [
+          {
+            "api_key": []
+          }
+        ]
+      }
+    }
+  },
+  "securityDefinitions": {
+    "api_key": {
+      "type": "apiKey",
+      "name": "token",
+      "in": "header"
+    }
+  },
+  "definitions": {
+    "LoginCommandData": {
+      "type": "object",
+      "properties": {
+        "username": {
+          "type": "string"
+        },
+        "password": {
+          "type": "string"
+        }
+      }
+    },
+    "TokenResponse": {
+      "type": "object",
+      "properties": {
+        "token": {
+          "type": "string"
+        },
+        "tokenPriveleges": {
+          "type": "integer",
+          "description": "no permissions is 0, read 1, write 2, read|write 3",
+          "enum": [
+            0,
+            1,
+            2,
+            3
+          ]
+        }
+      }
+    },
+    "CallbackCommandData": {
+      "type": "object",
+      "properties": {
+        "webHook": {
+          "type": "string"
+        },
+        "useWebHook": {
+          "type": "boolean"
+        }
+      }
+    },
+    "NotificationData": {
+      "type": "object",
+      "description": "used for subscription notifications",
+      "properties": {
+        "SID": {
+          "description": "name of the SID that this notification is for",
+          "type": "string"
+        },
+        "SIDvalue": {
+          "description": "string representation of the new value, could be double int string or json string (bulk)",
+          "type": "string"
+        }
+      }
+    },
+    "StringCommandData": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "string"
+        }
+      }
+    },
+    "SubscriptionCommandData": {
+      "type": "object",
+      "properties": {
+        "useEvent": {
+          "type": "boolean"
+        },
+        "useDatastore": {
+          "type": "boolean"
+        },
+        "mode": {
+          "type": "integer",
+          "description": "0 = Webhook, 1 = Callback",
+          "enum": [
+            0,
+            1
+          ]
+        }
+      }
+    },
+    "DoubleCommandData": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "number",
+          "format": "Float64"
+        }
+      }
+    },
+    "IntegerCommandData": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "integer",
+          "format": "Int32"
+        }
+      }
+    },
+    "BulkWrapper": {
+      "type": "object",
+      "properties": {
+        "bulk": {
+          "type": "object",
+          "$ref": "#/definitions/Bulk"
+        }
+      }
+    },
+    "Bulk": {
+      "type": "object",
+      "discriminator": "__type",
+      "properties": {
+        "__type": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "__type"
+      ]
+    },
+    "BulkNotificationDataTypeBox:WcfDataServices": {
+      "description": "Notification posted to screen",
+      "allOf": [
+        {
+          "$ref": "#/definitions/Bulk"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "BulkStruct": {
+              "type": "object",
+              "$ref": "#definitions/BulkNotificationDataType"
+            }
+          }
+        }
+      ]
+    },
+    "RemoteCommandInfoTypeBox:WcfDataServices": {
+      "description": "Notification posted to screen",
+      "allOf": [
+        {
+          "$ref": "#/definitions/Bulk"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "BulkStruct": {
+              "type": "object",
+              "$ref": "#definitions/RemoteCommandInfoType"
+            }
+          }
+        }
+      ]
+    },
+    "BulkPartSetupTypeBox:WcfDataServices": {
+      "description": "Notification posted to screen",
+      "allOf": [
+        {
+          "$ref": "#/definitions/Bulk"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "BulkStruct": {
+              "type": "object",
+              "$ref": "#definitions/BulkCurrentPartSetupType"
+            }
+          }
+        }
+      ]
+    },
+    "BulkMachinePosTypeBox:WcfDataServices": {
+      "description": "Notification posted to screen",
+      "allOf": [
+        {
+          "$ref": "#/definitions/Bulk"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "BulkStruct": {
+              "type": "object",
+              "$ref": "#definitions/BulkMachinePosType"
+            }
+          }
+        }
+      ]
+    },
+    "BulkNotificationDataType": {
+      "type": "object",
+      "properties": {
+        "m_wrcFileName": {
+          "type": "array",
+          "description": "ANSI encoded string as bytes",
+          "minItems": 400,
+          "maxItems": 400,
+          "items": {
+            "type": "integer",
+            "format": "Int8"
+          }
+        },
+        "m_NotificationIndex": {
+          "type": "integer"
+        },
+        "m_Msg": {
+          "type": "array",
+          "description": "UTF_16 encoded string as bytes",
+          "minItems": 400,
+          "maxItems": 400,
+          "items": {
+            "type": "integer",
+            "format": "Int8"
+          }
+        },
+        "m_MsgType": {
+          "type": "integer",
+          "format": "Int32"
+        },
+        "m_Timestamp": {
+          "type": "object",
+          "$ref": "#definitions/timestamp"
+        }
+      }
+    },
+    "RemoteCommandInfoType": {
+      "type": "object",
+      "properties": {
+        "dwCmdId": {
+          "type": "integer",
+          "format": "Int32"
+        },
+        "dValue": {
+          "type": "array",
+          "minItems": 10,
+          "maxItems": 10,
+          "items": {
+            "format": "Float64",
+            "type": "number"
+          }
+        },
+        "sValue": {
+          "description": "5x 200 byte ANSI strings",
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "format": "Int8"
+          },
+          "minItems": 1000,
+          "maxItems": 1000
+        },
+        "dwCmdCompleteSid": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "dwCmdId"
+      ]
+    },
+    "BulkCurrentPartSetupType": {
+      "type": "object",
+      "properties": {
+        "offsets": {
+          "type": "object",
+          "$ref": "#definitions/BulkMachinePosType"
+        },
+        "A_Centerline": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "items": {
+            "format": "Float64",
+            "type": "number"
+          }
+        },
+        "B_Centerline": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "items": {
+            "format": "Float64",
+            "type": "number"
+          }
+        },
+        "C_Centerline": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "items": {
+            "format": "Float64",
+            "type": "number"
+          }
+        },
+        "XYSkewAngle": {
+          "type": "number",
+          "format": "Float64"
+        }
+      }
+    },
+    "BulkMachinePosType": {
+      "type": "object",
+      "properties": {
+        "dMachinePosition": {
+          "type": "array",
+          "items": {
+            "type": "number",
+            "format": "Float64"
+          },
+          "minItems": 16,
+          "maxItems": 32
+        }
+      }
+    },
+    "timestamp": {
+      "type": "object",
+      "properties": {
+        "wDay": {
+          "type": "integer",
+          "format": "Int32"
+        },
+        "wDayOfWeek": {
+          "type": "integer",
+          "format": "Int32"
+        },
+        "wHour": {
+          "type": "integer",
+          "format": "Int32"
+        },
+        "wMilliseconds": {
+          "type": "integer",
+          "format": "Int32"
+        },
+        "wMinute": {
+          "type": "integer",
+          "format": "Int32"
+        },
+        "wMonth": {
+          "type": "integer",
+          "format": "Int32"
+        },
+        "wSecond": {
+          "type": "integer",
+          "format": "Int32"
+        },
+        "wYear": {
+          "type": "integer",
+          "format": "Int32"
+        }
+      }
+    }
+  },
+  "externalDocs": {
+    "description": "Find out more about Swagger",
+    "url": "http://swagger.io"
+  }
+}
