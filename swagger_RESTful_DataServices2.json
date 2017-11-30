@@ -135,7 +135,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#definitions/StringCommandData"
+              "$ref": "#/definitions/StringCommandData"
             }
           }
         ],
@@ -211,7 +211,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#definitions/DoubleCommandData"
+              "$ref": "#/definitions/DoubleCommandData"
             }
           }
         ],
@@ -287,7 +287,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#definitions/BulkWrapper"
+              "$ref": "#/definitions/BulkWrapper"
             }
           }
         ],
@@ -363,7 +363,7 @@
             "required": true,
             "in": "body",
             "schema": {
-              "$ref": "#definitions/IntegerCommandData"
+              "$ref": "#/definitions/IntegerCommandData"
             }
           }
         ],
@@ -436,7 +436,7 @@
             "required": true,
             "in": "body",
             "schema": {
-              "$ref": "#definitions/SubscriptionCommandData"
+              "$ref": "#/definitions/SubscriptionCommandData"
             }
           }
         ],
@@ -494,7 +494,7 @@
             "required": true,
             "in": "body",
             "schema": {
-              "$ref": "#definitions/CallbackCommandData"
+              "$ref": "#/definitions/CallbackCommandData"
             }
           }
         ],
@@ -653,7 +653,7 @@
           "properties": {
             "BulkStruct": {
               "type": "object",
-              "$ref": "#definitions/BulkNotificationDataType"
+              "$ref": "#/definitions/BulkNotificationDataType"
             }
           }
         }
@@ -670,7 +670,7 @@
           "properties": {
             "BulkStruct": {
               "type": "object",
-              "$ref": "#definitions/RemoteCommandInfoType"
+              "$ref": "#/definitions/RemoteCommandInfoType"
             }
           }
         }
@@ -687,7 +687,7 @@
           "properties": {
             "BulkStruct": {
               "type": "object",
-              "$ref": "#definitions/BulkCurrentPartSetupType"
+              "$ref": "#/definitions/BulkCurrentPartSetupType"
             }
           }
         }
@@ -704,7 +704,7 @@
           "properties": {
             "BulkStruct": {
               "type": "object",
-              "$ref": "#definitions/BulkMachinePosType"
+              "$ref": "#/definitions/BulkMachinePosType"
             }
           }
         }
@@ -742,7 +742,7 @@
         },
         "m_Timestamp": {
           "type": "object",
-          "$ref": "#definitions/timestamp"
+          "$ref": "#/definitions/timestamp"
         }
       }
     },
@@ -785,7 +785,7 @@
       "properties": {
         "offsets": {
           "type": "object",
-          "$ref": "#definitions/BulkMachinePosType"
+          "$ref": "#/definitions/BulkMachinePosType"
         },
         "A_Centerline": {
           "type": "array",
