@@ -439,7 +439,7 @@ namespace RESTclient
             HttpWebRequest set = (HttpWebRequest)WebRequest.Create("https://" + address + ":4504/DataService/Bulk/" + SID);
             BulkWrapper bulk = value;
             MemoryStream payloaddata = new MemoryStream();
-            IntegerSerializer.WriteObject(payloaddata, bulk);
+            BulkSerializer.WriteObject(payloaddata, bulk);
             set.Method = "PUT";
             InitializeRequest(set, payloaddata);
 
