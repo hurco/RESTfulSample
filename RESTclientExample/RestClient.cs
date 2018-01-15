@@ -120,6 +120,7 @@ namespace RESTclient
             MemoryStream payloaddata = new MemoryStream();
             LoginSerializer.WriteObject(payloaddata, command);
             login.ContentType = "text/json";
+            
 
             login.ContentLength = payloaddata.Length;
             try
@@ -513,6 +514,8 @@ namespace RESTclient
             set.ServicePoint.Expect100Continue = false;
             set.Host = "machine-connect.hurco.com";
             set.KeepAlive = ReUseConnections;
+            set.Pipelined = ReUseConnections;
+            set.ConnectionGroupName = "WinmaxDataServices";
             set.Headers.Add("token", token);
             if (payloaddata != null)
             {
@@ -521,7 +524,23 @@ namespace RESTclient
             }
         }
 
-        private String ExecuteRequest(HttpWebRequest therequest, MemoryStream payloaddata = null)
+        private void ResetConnections()
+        {
+            ServicePoint srvrPoint = ServicePointManager.FindServicePoint(new Uri("https://" + address + ":4504/"));
+            srvrPoint.CloseConnectionGroup("WinmaxDataServices");
+        }
+
+        private bool WaitAndReset(EventWaitHandle waithandle)
+        {
+            if(!waithandle.WaitOne(3000))
+            {
+                ResetConnections();
+                return false;
+            }
+            return true;
+        }
+
+        private String ExecuteRequest(HttpWebRequest therequest, MemoryStream payloaddata = null,bool retry= true)
         {
             EventWaitHandle waithandle = new EventWaitHandle(false, EventResetMode.AutoReset);
             String Response = "";
@@ -540,6 +559,7 @@ namespace RESTclient
                 }
                 if (R == null)
                 {
+                    return;
                 }
                 if (R.ContentLength > 0 && R.StatusCode == HttpStatusCode.OK)
                 {
@@ -584,10 +604,14 @@ namespace RESTclient
                     therequest.BeginGetResponse(ResponseHandler, therequest);
                 }
 
-                waithandle.WaitOne(3000);
+                if(!WaitAndReset(waithandle) && retry)
+                {
+                    Response = ExecuteRequest(therequest, payloaddata, false);
+                }
             }
             catch (Exception e)
             {
+                therequest.Abort();
                 return Response;
             }
             return Response;
