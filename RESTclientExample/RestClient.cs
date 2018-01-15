@@ -39,6 +39,8 @@ namespace RESTclient
 
         public bool IsConnected { get { return connected; } }
 
+        public bool ReUseConnections = false;
+
         private bool Abort = false;
         public RestClient(string address, string vendorID, string password)
         {
@@ -48,7 +50,7 @@ namespace RESTclient
 
             // Override automatic validation of SSL server certificates.
             ServicePointManager.ServerCertificateValidationCallback = ValidateServerCertficate;
-            
+
 
 
         }
@@ -65,7 +67,7 @@ namespace RESTclient
                 return true;
             }
 
-            if(cert.GetCertHashString() == "98D003D224D5D50F90CA4EBA311E7D995F03D33B")//ceck self signed hash
+            if (cert.GetCertHashString() == "98D003D224D5D50F90CA4EBA311E7D995F03D33B")//ceck self signed hash
             {
                 return true;
             }
@@ -111,7 +113,7 @@ namespace RESTclient
             login.Method = "POST";
             login.Host = "machine-connect.hurco.com";
             login.KeepAlive = false;
-            
+
             login.Pipelined = false;
             bool success = false;
             LoginCommandData command = new LoginCommandData() { username = vendorID, password = password };
@@ -123,59 +125,59 @@ namespace RESTclient
             try
             {
                 login.BeginGetRequestStream((r) =>
-            {
-                HttpWebRequest webRequest = (HttpWebRequest)r.AsyncState;
-                Stream stream = webRequest.EndGetRequestStream(r);
-                stream.Write(payloaddata.GetBuffer(), 0, (int)payloaddata.Length);
-
-                login.BeginGetResponse((aresult) =>
                 {
-                    HttpWebRequest request = (HttpWebRequest)aresult.AsyncState;
-                    HttpWebResponse R = null;
-                    try
+                    HttpWebRequest webRequest = (HttpWebRequest)r.AsyncState;
+                    Stream stream = webRequest.EndGetRequestStream(r);
+                    stream.Write(payloaddata.GetBuffer(), 0, (int)payloaddata.Length);
+
+                    login.BeginGetResponse((aresult) =>
                     {
-                        R = (HttpWebResponse)request.EndGetResponse(aresult);
-                    }
-                    catch (Exception e)
-                    {
-                        waithandle.Set();
-                    }
-                    if (R.ContentLength > 0 && R.StatusCode == HttpStatusCode.OK)
-                    {
-                        byte[] buffer = new byte[R.ContentLength];
-                        R.GetResponseStream().BeginRead(buffer, 0, (int)R.ContentLength, (async) =>
-                           {
-                               Stream s = (Stream)async.AsyncState;
-                               int bytes = s.EndRead(async);
-                               if (bytes < R.ContentLength)
-                               {
-                                   ReadResponse(s, buffer, (int)R.ContentLength);
-                               }
-                               MemoryStream resultdata = new MemoryStream(buffer);
-                               TokenResponse result = (TokenResponse)TokenSerializer.ReadObject(resultdata);
-                               this.token = result.token;
-                               R.Close();
-                               waithandle.Set();
-                           }, R.GetResponseStream());
-                    }
-                    else
-                    {
-                        waithandle.Set();
-                    }
-                    R.Close();
-                    stream.Close();
+                        HttpWebRequest request = (HttpWebRequest)aresult.AsyncState;
+                        HttpWebResponse R = null;
+                        try
+                        {
+                            R = (HttpWebResponse)request.EndGetResponse(aresult);
+                        }
+                        catch (Exception e)
+                        {
+                            waithandle.Set();
+                        }
+                        if (R.ContentLength > 0 && R.StatusCode == HttpStatusCode.OK)
+                        {
+                            byte[] buffer = new byte[R.ContentLength];
+                            R.GetResponseStream().BeginRead(buffer, 0, (int)R.ContentLength, (async) =>
+                            {
+                                Stream s = (Stream)async.AsyncState;
+                                int bytes = s.EndRead(async);
+                                if (bytes < R.ContentLength)
+                                {
+                                    ReadResponse(s, buffer, (int)R.ContentLength);
+                                }
+                                MemoryStream resultdata = new MemoryStream(buffer);
+                                TokenResponse result = (TokenResponse)TokenSerializer.ReadObject(resultdata);
+                                this.token = result.token;
+                                R.Close();
+                                waithandle.Set();
+                            }, R.GetResponseStream());
+                        }
+                        else
+                        {
+                            waithandle.Set();
+                        }
+                        R.Close();
+                        stream.Close();
+                    }, login);
+
                 }, login);
 
-            }, login);
-
-                success=  waithandle.WaitOne(10000);
+                success = waithandle.WaitOne(10000);
             }
             catch (Exception e)
             {
-                success= false;
+                success = false;
             }
 
-            if(success && token!="")
+            if (success && token != "")
             {
                 Thread t = new Thread(() =>
                 EnableCallback());
@@ -198,10 +200,10 @@ namespace RESTclient
                 writer.WriteLine("STARTTLS");
                 writer.Flush();
                 String response = reader.ReadLine();
-                if(response == "STARTTLS")
+                if (response == "STARTTLS")
                 {
-                    SslStream ssl = new SslStream(client.GetStream(),false,ValidateServerCertficate);
-                    
+                    SslStream ssl = new SslStream(client.GetStream(), false, ValidateServerCertficate);
+
                     ssl.AuthenticateAsClient("machine-connect.hurco.com");
                     writer = new StreamWriter(ssl);
                     writer.WriteLine(token);
@@ -233,14 +235,14 @@ namespace RESTclient
                 }
                 StringBuilder messageData = new StringBuilder();
                 int bytes = 0;
-                
+
                 char[] chars = new char[decoder.GetCharCount(Buffer, 0, bytes)];
-                
+
                 decoder.GetChars(Buffer, 0, bytes, chars, 0);
                 messageData.Append(chars);
                 do
                 {
-                    if(!source.CanRead)
+                    if (!source.CanRead)
                     {
                         break;
                     }
@@ -278,9 +280,9 @@ namespace RESTclient
 
         public void Subscribe(string sid)
         {
-            if(!connected)
+            if (!connected)
             {
-                if(!Connect())
+                if (!Connect())
                 {
                     return;
                 }
@@ -310,10 +312,52 @@ namespace RESTclient
         }
 
 
-        public void BeginSubscribe() { }
+        public void BeginSubscribe()
+        {
+            if (!connected)
+            {
+                if (!Connect())
+                {
+                    return;
+                }
+            }
+            HttpWebRequest get = (HttpWebRequest)WebRequest.Create("https://" + address + ":4504/NotificationService/BeginSubscribe/");
+            get.Method = "GET";
+            InitializeRequest(get);
+            string value = "";
+            try
+            {
+                String response = ExecuteRequest(get);
+            }
+            catch (Exception err)
+            {
+                //might fail if older service
+            }
+        }
 
 
-        public void EndSubscribe() { }
+        public void EndSubscribe()
+        {
+            if (!connected)
+            {
+                if (!Connect())
+                {
+                    return;
+                }
+            }
+            HttpWebRequest get = (HttpWebRequest)WebRequest.Create("https://" + address + ":4504/NotificationService/EndSubscribe/");
+            get.Method = "GET";
+            InitializeRequest(get);
+            string value = "";
+            try
+            {
+                String response = ExecuteRequest(get);
+            }
+            catch (Exception err)
+            {
+                //might fail if older service
+            }
+        }
 
         public String GetSID(string sidName)
         {
@@ -329,7 +373,7 @@ namespace RESTclient
             InitializeRequest(get);
             string value = "";
             String response = ExecuteRequest(get);
-            if(response!= null)
+            if (response != null)
             {
                 value = response;
             }
@@ -468,6 +512,7 @@ namespace RESTclient
         {
             set.ServicePoint.Expect100Continue = false;
             set.Host = "machine-connect.hurco.com";
+            set.KeepAlive = ReUseConnections;
             set.Headers.Add("token", token);
             if (payloaddata != null)
             {
@@ -495,7 +540,6 @@ namespace RESTclient
                 }
                 if (R == null)
                 {
-                    return ;
                 }
                 if (R.ContentLength > 0 && R.StatusCode == HttpStatusCode.OK)
                 {
@@ -549,6 +593,6 @@ namespace RESTclient
             return Response;
         }
 
-       
+
     }
 }
