@@ -55,6 +55,11 @@ namespace RESTclient
 
         }
 
+        public void Shutdown()
+        {
+            Abort = true;
+        }
+
         private bool ValidateServerCertficate(
                 object sender,
                 X509Certificate cert,
@@ -252,6 +257,10 @@ namespace RESTclient
                         bytes = source.Read(Buffer, 0, Buffer.Length);
 
                     }
+                    catch (IOException e)
+                    {
+                        //things
+                    }
                     catch (Exception ex)
                     {
                     }
@@ -294,7 +303,7 @@ namespace RESTclient
             MemoryStream payloaddata = new MemoryStream();
             SubscriptionSerializer.WriteObject(payloaddata, command);
             InitializeRequest(subscription, payloaddata);
-            ExecuteRequest(subscription, payloaddata);
+            ExecuteRequest(subscription, Retries, payloaddata);
         }
 
         public void Unsubscribe(string sid)
@@ -309,7 +318,7 @@ namespace RESTclient
             HttpWebRequest subscription = (HttpWebRequest)WebRequest.Create("https://" + address + ":4504/NotificationService/Subscription/" + sid);
             subscription.Method = "DELETE";
             InitializeRequest(subscription);
-            ExecuteRequest(subscription);
+            ExecuteRequest(subscription, Retries);
         }
 
 
@@ -328,7 +337,7 @@ namespace RESTclient
             string value = "";
             try
             {
-                String response = ExecuteRequest(get);
+                String response = ExecuteRequest(get, Retries);
             }
             catch (Exception err)
             {
@@ -352,7 +361,7 @@ namespace RESTclient
             string value = "";
             try
             {
-                String response = ExecuteRequest(get);
+                String response = ExecuteRequest(get, Retries);
             }
             catch (Exception err)
             {
@@ -373,7 +382,7 @@ namespace RESTclient
             get.Method = "GET";
             InitializeRequest(get);
             string value = "";
-            String response = ExecuteRequest(get);
+            String response = ExecuteRequest(get, Retries);
             if (response != null)
             {
                 value = response;
@@ -394,7 +403,7 @@ namespace RESTclient
             get.Method = "GET";
             InitializeRequest(get);
             double value = 0.0;
-            String response = ExecuteRequest(get);
+            String response = ExecuteRequest(get, Retries);
             double.TryParse(response, out value);
             return value;
         }
@@ -412,7 +421,7 @@ namespace RESTclient
             get.Method = "GET";
             InitializeRequest(get);
             int value = 0;
-            String response = ExecuteRequest(get);
+            String response = ExecuteRequest(get, Retries);
             int.TryParse(response, out value);
             return value;
         }
@@ -433,7 +442,7 @@ namespace RESTclient
             DoubleSerializer.WriteObject(payloaddata, command);
             InitializeRequest(set, payloaddata);
 
-            ExecuteRequest(set, payloaddata);
+            ExecuteRequest(set, Retries, payloaddata);
         }
         public void SetSID(String SID, string value)
         {
@@ -451,7 +460,7 @@ namespace RESTclient
             StringSerializer.WriteObject(payloaddata, command);
             InitializeRequest(set, payloaddata);
 
-            ExecuteRequest(set, payloaddata);
+            ExecuteRequest(set, Retries, payloaddata);
         }
         public void SetSID(String SID, int value)
         {
@@ -469,7 +478,7 @@ namespace RESTclient
             set.Method = "PUT";
             InitializeRequest(set, payloaddata);
 
-            ExecuteRequest(set, payloaddata);
+            ExecuteRequest(set, Retries, payloaddata);
         }
 
         public void SetSID(String SID, BulkWrapper value)
@@ -488,7 +497,7 @@ namespace RESTclient
             set.Method = "PUT";
             InitializeRequest(set, payloaddata);
 
-            ExecuteRequest(set, payloaddata);
+            ExecuteRequest(set, Retries, payloaddata);
         }
 
         public BulkWrapper GetBulk(String SID)
@@ -504,7 +513,7 @@ namespace RESTclient
             set.Method = "GET";
             InitializeRequest(set);
 
-            String json = ExecuteRequest(set);
+            String json = ExecuteRequest(set,Retries);
             return (BulkWrapper)BulkSerializer.ReadObject(new MemoryStream(Encoding.UTF8.GetBytes(json)));
 
         }
@@ -530,9 +539,19 @@ namespace RESTclient
             srvrPoint.CloseConnectionGroup("WinmaxDataServices");
         }
 
-        private bool WaitAndReset(EventWaitHandle waithandle)
+        public int RequestTimeoutMs { get; set; } = 3000;
+
+        private bool WaitAndReset(EventWaitHandle waithandle, EventWaitHandle failhandle, ref bool timeout)
         {
-            if(!waithandle.WaitOne(3000))
+            timeout = false;
+            int result = EventWaitHandle.WaitAny(new WaitHandle[] { waithandle, failhandle }, RequestTimeoutMs);
+            if (result == EventWaitHandle.WaitTimeout)
+            {
+                ResetConnections();
+                timeout = true;
+                return false;
+            }
+            if(result == 1) // fail event
             {
                 ResetConnections();
                 return false;
@@ -540,81 +559,121 @@ namespace RESTclient
             return true;
         }
 
-        private String ExecuteRequest(HttpWebRequest therequest, MemoryStream payloaddata = null,bool retry= true)
-        {
-            EventWaitHandle waithandle = new EventWaitHandle(false, EventResetMode.AutoReset);
-            String Response = "";
+        public int Retries { get; set; } = 10;
 
-            AsyncCallback ResponseHandler = (aresult) =>
+        private String ExecuteRequest(HttpWebRequest therequest, int retries, MemoryStream payloaddata = null)
+        {
+            //lock (this)
             {
-                HttpWebRequest request = (HttpWebRequest)aresult.AsyncState;
-                HttpWebResponse R = null;
+                EventWaitHandle waithandle = new EventWaitHandle(false, EventResetMode.AutoReset);
+                EventWaitHandle failhandle = new EventWaitHandle(false, EventResetMode.AutoReset);
+                String Response = "";
+
+                AsyncCallback ResponseHandler = (aresult) =>
+                {
+                    HttpWebRequest request = (HttpWebRequest)aresult.AsyncState;
+                    HttpWebResponse R = null;
+                    try
+                    {
+                        R = (HttpWebResponse)request.EndGetResponse(aresult);
+                    }
+                    catch (Exception e)
+                    {
+                        failhandle.Set();
+                    }
+                    if (R == null)
+                    {
+                        return;
+                    }
+                    if (R.ContentLength > 0 && R.StatusCode == HttpStatusCode.OK)
+                    {
+                        byte[] buffer = new byte[R.ContentLength];
+                        try
+                        {
+                            R.GetResponseStream().BeginRead(buffer, 0, (int)R.ContentLength, (async) =>
+                            {
+                                Stream s = (Stream)async.AsyncState;
+                                try
+                                {
+                                    int bytes = s.EndRead(async);
+                                    if (bytes < R.ContentLength)
+                                    {
+                                        ReadResponse(s, buffer, (int)R.ContentLength);
+                                    }
+                                    Response = Encoding.UTF8.GetString(buffer);
+                                    //Response r = (Response)ResponseSerializer.ReadObject(new MemoryStream(buffer));
+                                    //Response = r.responseData[0].ToString();
+                                    R.Close();
+                                    waithandle.Set();
+                                }
+                                catch
+                                {
+                                    R.Close();
+                                    failhandle.Set();
+                                }
+                            }, R.GetResponseStream());
+                        }
+                        catch
+                        {
+                            R.Close();
+                            failhandle.Set();
+                        }
+                    }
+                    else
+                    {
+                        waithandle.Set();
+                    }
+                    R.Close();
+                };
+
                 try
                 {
-                    R = (HttpWebResponse)request.EndGetResponse(aresult);
+                    if (payloaddata != null)
+                    {
+                        therequest.BeginGetRequestStream((r) =>
+                        {
+                            HttpWebRequest webRequest = (HttpWebRequest)r.AsyncState;
+                            try
+                            {
+                                Stream stream = webRequest.EndGetRequestStream(r);
+                                stream.Write(payloaddata.GetBuffer(), 0, (int)payloaddata.Length);
+                                therequest.BeginGetResponse(ResponseHandler, therequest);
+                            }
+                            catch
+                            {
+                                //therequest.Abort();
+                                failhandle.Set();
+                            }
+
+                        }, therequest);
+                    }
+                    else
+                    {
+                        therequest.BeginGetResponse(ResponseHandler, therequest);
+                    }
+                    bool timeout = false;
+                    if (!WaitAndReset(waithandle, failhandle, ref timeout) && retries>0)
+                    {
+                        if (timeout)
+                        {
+                            therequest.Abort();
+                        }
+                        System.Diagnostics.Debug.WriteLine("Request failed or timed out retrying, count="+(Retries-retries+1));
+                        Response = ExecuteRequest(therequest, retries--, payloaddata);
+                    }
+                    if(retries<=0)
+                    {
+                        System.Diagnostics.Debug.WriteLine("Retry Count Exceeded!");
+                    }
                 }
                 catch (Exception e)
                 {
-                    waithandle.Set();
+                    System.Diagnostics.Debug.WriteLine(e);
+                    therequest.Abort();
+                    return Response;
                 }
-                if (R == null)
-                {
-                    return;
-                }
-                if (R.ContentLength > 0 && R.StatusCode == HttpStatusCode.OK)
-                {
-                    byte[] buffer = new byte[R.ContentLength];
-                    R.GetResponseStream().BeginRead(buffer, 0, (int)R.ContentLength, (async) =>
-                    {
-                        Stream s = (Stream)async.AsyncState;
-                        int bytes = s.EndRead(async);
-                        if (bytes < R.ContentLength)
-                        {
-                            ReadResponse(s, buffer, (int)R.ContentLength);
-                        }
-                        Response = Encoding.UTF8.GetString(buffer);
-                        //Response r = (Response)ResponseSerializer.ReadObject(new MemoryStream(buffer));
-                        //Response = r.responseData[0].ToString();
-                        R.Close();
-                        waithandle.Set();
-                    }, R.GetResponseStream());
-                }
-                else
-                {
-                    waithandle.Set();
-                }
-                R.Close();
-            };
-
-            try
-            {
-                if (payloaddata != null)
-                {
-                    therequest.BeginGetRequestStream((r) =>
-                    {
-                        HttpWebRequest webRequest = (HttpWebRequest)r.AsyncState;
-                        Stream stream = webRequest.EndGetRequestStream(r);
-                        stream.Write(payloaddata.GetBuffer(), 0, (int)payloaddata.Length);
-                        therequest.BeginGetResponse(ResponseHandler, therequest);
-
-                    }, therequest);
-                }
-                else
-                {
-                    therequest.BeginGetResponse(ResponseHandler, therequest);
-                }
-
-                if(!WaitAndReset(waithandle) && retry)
-                {
-                    Response = ExecuteRequest(therequest, payloaddata, false);
-                }
-            }
-            catch (Exception e)
-            {
-                therequest.Abort();
                 return Response;
             }
-            return Response;
         }
 
 
