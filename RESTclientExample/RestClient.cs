@@ -659,7 +659,7 @@ namespace RESTclient
                             therequest.Abort();
                         }
                         System.Diagnostics.Debug.WriteLine("Request failed or timed out retrying, count="+(Retries-retries+1));
-                        Response = ExecuteRequest(therequest, retries--, payloaddata);
+                        Response = ExecuteRequest(therequest, --retries, payloaddata);
                     }
                     if(retries<=0)
                     {
