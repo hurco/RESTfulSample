@@ -58,6 +58,10 @@ namespace RESTclient
         public void Shutdown()
         {
             Abort = true;
+            if (callbackstream != null)
+            {
+                callbackstream.Close();
+            }
         }
 
         private bool ValidateServerCertficate(
@@ -124,7 +128,7 @@ namespace RESTclient
             LoginCommandData command = new LoginCommandData() { username = vendorID, password = password };
             MemoryStream payloaddata = new MemoryStream();
             LoginSerializer.WriteObject(payloaddata, command);
-            login.ContentType = "text/json";
+            login.ContentType = "application/json";
             
 
             login.ContentLength = payloaddata.Length;
@@ -162,6 +166,7 @@ namespace RESTclient
                                 MemoryStream resultdata = new MemoryStream(buffer);
                                 TokenResponse result = (TokenResponse)TokenSerializer.ReadObject(resultdata);
                                 this.token = result.token;
+                                s.Close();
                                 R.Close();
                                 waithandle.Set();
                             }, R.GetResponseStream());
@@ -228,8 +233,10 @@ namespace RESTclient
 
         }
 
+        private Stream callbackstream = null;
         void CallbackThread(Stream source)
         {
+            callbackstream = source;
             byte[] Buffer = new byte[8192];
             Decoder decoder = Encoding.UTF8.GetDecoder();
             while (!Abort)
@@ -283,11 +290,26 @@ namespace RESTclient
                 while (bytes != -1);
 
                 MemoryStream resultdata = new MemoryStream(Encoding.UTF8.GetBytes(messageData.ToString()));
-                NotificationData result = (NotificationData)NotificationSerializer.ReadObject(resultdata);
+                try
+                {
+                    NotificationData result = (NotificationData)NotificationSerializer.ReadObject(resultdata);
+                }
+                catch
+                {
+                    if (Abort)
+                    {
+                        break;
+                    }
+                    else
+                    {
+                        continue;
+                    }
+                }
                 OnSidUpdated(result.SID, result.SIDvalue);
             }
         }
 
+        /// <exception cref="TimeoutException">retry count exceeded due to timeouts or other network faults</exception>
         public void Subscribe(string sid)
         {
             if (!connected)
@@ -306,6 +328,7 @@ namespace RESTclient
             ExecuteRequest(subscription, Retries, payloaddata);
         }
 
+        /// <exception cref="TimeoutException">retry count exceeded due to timeouts or other network faults</exception>
         public void Unsubscribe(string sid)
         {
             if (!connected)
@@ -317,11 +340,12 @@ namespace RESTclient
             }
             HttpWebRequest subscription = (HttpWebRequest)WebRequest.Create("https://" + address + ":4504/NotificationService/Subscription/" + sid);
             subscription.Method = "DELETE";
+            subscription.Accept = "application/json; text/json";
             InitializeRequest(subscription);
             ExecuteRequest(subscription, Retries);
         }
 
-
+        /// <exception cref="TimeoutException">retry count exceeded due to timeouts or other network faults</exception>
         public void BeginSubscribe()
         {
             if (!connected)
@@ -333,6 +357,7 @@ namespace RESTclient
             }
             HttpWebRequest get = (HttpWebRequest)WebRequest.Create("https://" + address + ":4504/NotificationService/BeginSubscribe/");
             get.Method = "GET";
+            get.Accept = "application/json; text/json";
             InitializeRequest(get);
             string value = "";
             try
@@ -345,7 +370,7 @@ namespace RESTclient
             }
         }
 
-
+        /// <exception cref="TimeoutException">retry count exceeded due to timeouts or other network faults</exception>
         public void EndSubscribe()
         {
             if (!connected)
@@ -357,6 +382,7 @@ namespace RESTclient
             }
             HttpWebRequest get = (HttpWebRequest)WebRequest.Create("https://" + address + ":4504/NotificationService/EndSubscribe/");
             get.Method = "GET";
+            get.Accept = "application/json; text/json";
             InitializeRequest(get);
             string value = "";
             try
@@ -369,6 +395,7 @@ namespace RESTclient
             }
         }
 
+        /// <exception cref="TimeoutException">retry count exceeded due to timeouts or other network faults</exception>
         public String GetSID(string sidName)
         {
             if (!connected)
@@ -380,6 +407,7 @@ namespace RESTclient
             }
             HttpWebRequest get = (HttpWebRequest)WebRequest.Create("https://" + address + ":4504/DataService/String/" + sidName);
             get.Method = "GET";
+            get.Accept = "application/json; text/json";
             InitializeRequest(get);
             string value = "";
             String response = ExecuteRequest(get, Retries);
@@ -390,6 +418,7 @@ namespace RESTclient
             return value;
         }
 
+        /// <exception cref="TimeoutException">retry count exceeded due to timeouts or other network faults</exception>
         public double GetDoubleSID(string sidName)
         {
             if (!connected)
@@ -401,6 +430,7 @@ namespace RESTclient
             }
             HttpWebRequest get = (HttpWebRequest)WebRequest.Create("https://" + address + ":4504/DataService/Double/" + sidName);
             get.Method = "GET";
+            get.Accept = "application/json; text/json";
             InitializeRequest(get);
             double value = 0.0;
             String response = ExecuteRequest(get, Retries);
@@ -408,6 +438,7 @@ namespace RESTclient
             return value;
         }
 
+        /// <exception cref="TimeoutException">retry count exceeded due to timeouts or other network faults</exception>
         public int GetIntSID(string sidName)
         {
             if (!connected)
@@ -419,6 +450,7 @@ namespace RESTclient
             }
             HttpWebRequest get = (HttpWebRequest)WebRequest.Create("https://" + address + ":4504/DataService/Integer/" + sidName);
             get.Method = "GET";
+            get.Accept = "application/json; text/json";
             InitializeRequest(get);
             int value = 0;
             String response = ExecuteRequest(get, Retries);
@@ -426,6 +458,7 @@ namespace RESTclient
             return value;
         }
 
+        /// <exception cref="TimeoutException">retry count exceeded due to timeouts or other network faults</exception>
         public void SetSID(String SID, double value)
         {
             if (!connected)
@@ -444,6 +477,8 @@ namespace RESTclient
 
             ExecuteRequest(set, Retries, payloaddata);
         }
+
+        /// <exception cref="TimeoutException">retry count exceeded due to timeouts or other network faults</exception>
         public void SetSID(String SID, string value)
         {
             if (!connected)
@@ -462,6 +497,8 @@ namespace RESTclient
 
             ExecuteRequest(set, Retries, payloaddata);
         }
+
+        /// <exception cref="TimeoutException">retry count exceeded due to timeouts or other network faults</exception>
         public void SetSID(String SID, int value)
         {
             if (!connected)
@@ -481,6 +518,7 @@ namespace RESTclient
             ExecuteRequest(set, Retries, payloaddata);
         }
 
+        /// <exception cref="TimeoutException">retry count exceeded due to timeouts or other network faults</exception>
         public void SetSID(String SID, BulkWrapper value)
         {
             if (!connected)
@@ -500,6 +538,7 @@ namespace RESTclient
             ExecuteRequest(set, Retries, payloaddata);
         }
 
+        /// <exception cref="TimeoutException">retry count exceeded due to timeouts or other network faults</exception>
         public BulkWrapper GetBulk(String SID)
         {
             if (!connected)
@@ -511,8 +550,8 @@ namespace RESTclient
             }
             HttpWebRequest set = (HttpWebRequest)WebRequest.Create("https://" + address + ":4504/DataService/Bulk/" + SID);
             set.Method = "GET";
+            set.Accept = "application/json; text/json";
             InitializeRequest(set);
-
             String json = ExecuteRequest(set,Retries);
             return (BulkWrapper)BulkSerializer.ReadObject(new MemoryStream(Encoding.UTF8.GetBytes(json)));
 
@@ -523,14 +562,35 @@ namespace RESTclient
             set.ServicePoint.Expect100Continue = false;
             set.Host = "machine-connect.hurco.com";
             set.KeepAlive = ReUseConnections;
-            set.Pipelined = ReUseConnections;
+            set.Pipelined = false;
+            set.Timeout = Timeout.Infinite;
+            set.SendChunked = false;
+            set.ContentLength = 0;
             set.ConnectionGroupName = "WinmaxDataServices";
             set.Headers.Add("token", token);
             if (payloaddata != null)
             {
-                set.ContentType = "text/json";
+                set.ContentType = "application/json";
                 set.ContentLength = payloaddata.Length;
             }
+        }
+
+        private HttpWebRequest CopyRequest(HttpWebRequest therequest)
+        {
+            HttpWebRequest copy = (HttpWebRequest)WebRequest.Create(therequest.RequestUri);
+            copy.ServicePoint.Expect100Continue = therequest.ServicePoint.Expect100Continue;
+            copy.Host = therequest.Host;
+            copy.KeepAlive = therequest.KeepAlive;
+            copy.Pipelined = therequest.Pipelined;
+            copy.Timeout = therequest.Timeout;
+            copy.SendChunked = therequest.SendChunked;
+            copy.ContentLength = therequest.ContentLength;
+            copy.ConnectionGroupName = therequest.ConnectionGroupName;
+            copy.Headers.Add("token", therequest.Headers["token"]);
+            copy.ContentType = therequest.ContentType;
+            copy.Method = therequest.Method;
+            copy.Expect = therequest.Expect;
+            return copy;
         }
 
         private void ResetConnections()
@@ -577,9 +637,12 @@ namespace RESTclient
                     {
                         R = (HttpWebResponse)request.EndGetResponse(aresult);
                     }
-                    catch (Exception e)
+                    catch (WebException e)
                     {
-                        failhandle.Set();
+                        if (e.Status != WebExceptionStatus.RequestCanceled)
+                        {
+                            failhandle.Set();
+                        }
                     }
                     if (R == null)
                     {
@@ -603,11 +666,13 @@ namespace RESTclient
                                     Response = Encoding.UTF8.GetString(buffer);
                                     //Response r = (Response)ResponseSerializer.ReadObject(new MemoryStream(buffer));
                                     //Response = r.responseData[0].ToString();
+                                    s.Close();
                                     R.Close();
                                     waithandle.Set();
                                 }
                                 catch
                                 {
+                                    s.Close();
                                     R.Close();
                                     failhandle.Set();
                                 }
@@ -622,8 +687,8 @@ namespace RESTclient
                     else
                     {
                         waithandle.Set();
+                        R.Close();
                     }
-                    R.Close();
                 };
 
                 try
@@ -638,10 +703,12 @@ namespace RESTclient
                                 Stream stream = webRequest.EndGetRequestStream(r);
                                 stream.Write(payloaddata.GetBuffer(), 0, (int)payloaddata.Length);
                                 therequest.BeginGetResponse(ResponseHandler, therequest);
+                                stream.Flush();
+                                stream.Close();
                             }
                             catch
                             {
-                                //therequest.Abort();
+                                
                                 failhandle.Set();
                             }
 
@@ -649,7 +716,10 @@ namespace RESTclient
                     }
                     else
                     {
-                        therequest.BeginGetResponse(ResponseHandler, therequest);
+
+
+                        IAsyncResult Aresult =(IAsyncResult)therequest.BeginGetResponse(ResponseHandler, therequest);
+
                     }
                     bool timeout = false;
                     if (!WaitAndReset(waithandle, failhandle, ref timeout) && retries>0)
@@ -659,16 +729,27 @@ namespace RESTclient
                             therequest.Abort();
                         }
                         System.Diagnostics.Debug.WriteLine("Request failed or timed out retrying, count="+(Retries-retries+1));
-                        Response = ExecuteRequest(therequest, --retries, payloaddata);
+                        HttpWebRequest deepCopiedWebRequest = CopyRequest(therequest);
+                        Response = ExecuteRequest(deepCopiedWebRequest, --retries, payloaddata);
                     }
                     if(retries<=0)
                     {
                         System.Diagnostics.Debug.WriteLine("Retry Count Exceeded!");
+                        throw new TimeoutException("Retry count exceeded!");
                     }
                 }
-                catch (Exception e)
+                catch (WebException e)
                 {
-                    System.Diagnostics.Debug.WriteLine(e);
+                    System.Diagnostics.Debug.WriteLine(e.Message);
+                    if (e.Status != WebExceptionStatus.RequestCanceled)
+                    {
+                        therequest.Abort();
+                        return Response;
+                    }
+                }
+                catch (IOException e)
+                {
+                    System.Diagnostics.Debug.WriteLine(e.Message);
                     therequest.Abort();
                     return Response;
                 }
@@ -676,6 +757,6 @@ namespace RESTclient
             }
         }
 
-
+        
     }
 }
