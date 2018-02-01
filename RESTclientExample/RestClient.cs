@@ -293,6 +293,7 @@ namespace RESTclient
                 try
                 {
                     NotificationData result = (NotificationData)NotificationSerializer.ReadObject(resultdata);
+                    OnSidUpdated(result.SID, result.SIDvalue);
                 }
                 catch
                 {
@@ -305,7 +306,7 @@ namespace RESTclient
                         continue;
                     }
                 }
-                OnSidUpdated(result.SID, result.SIDvalue);
+                
             }
         }
 
