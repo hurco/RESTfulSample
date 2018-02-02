@@ -341,7 +341,7 @@ namespace RESTclient
             }
             HttpWebRequest subscription = (HttpWebRequest)WebRequest.Create("https://" + address + ":4504/NotificationService/Subscription/" + sid);
             subscription.Method = "DELETE";
-            subscription.Accept = "application/json; text/json";
+            subscription.Accept = "application/json, text/json";
             InitializeRequest(subscription);
             ExecuteRequest(subscription, Retries);
         }
@@ -358,7 +358,7 @@ namespace RESTclient
             }
             HttpWebRequest get = (HttpWebRequest)WebRequest.Create("https://" + address + ":4504/NotificationService/BeginSubscribe/");
             get.Method = "GET";
-            get.Accept = "application/json; text/json";
+            get.Accept = "application/json, text/json";
             InitializeRequest(get);
             string value = "";
             try
@@ -383,7 +383,7 @@ namespace RESTclient
             }
             HttpWebRequest get = (HttpWebRequest)WebRequest.Create("https://" + address + ":4504/NotificationService/EndSubscribe/");
             get.Method = "GET";
-            get.Accept = "application/json; text/json";
+            get.Accept = "application/json, text/json";
             InitializeRequest(get);
             string value = "";
             try
@@ -408,7 +408,7 @@ namespace RESTclient
             }
             HttpWebRequest get = (HttpWebRequest)WebRequest.Create("https://" + address + ":4504/DataService/String/" + sidName);
             get.Method = "GET";
-            get.Accept = "application/json; text/json";
+            get.Accept = "application/json, text/json";
             InitializeRequest(get);
             string value = "";
             String response = ExecuteRequest(get, Retries);
@@ -431,7 +431,7 @@ namespace RESTclient
             }
             HttpWebRequest get = (HttpWebRequest)WebRequest.Create("https://" + address + ":4504/DataService/Double/" + sidName);
             get.Method = "GET";
-            get.Accept = "application/json; text/json";
+            get.Accept = "application/json, text/json";
             InitializeRequest(get);
             double value = 0.0;
             String response = ExecuteRequest(get, Retries);
@@ -451,7 +451,7 @@ namespace RESTclient
             }
             HttpWebRequest get = (HttpWebRequest)WebRequest.Create("https://" + address + ":4504/DataService/Integer/" + sidName);
             get.Method = "GET";
-            get.Accept = "application/json; text/json";
+            get.Accept = "application/json, text/json";
             InitializeRequest(get);
             int value = 0;
             String response = ExecuteRequest(get, Retries);
@@ -551,7 +551,7 @@ namespace RESTclient
             }
             HttpWebRequest set = (HttpWebRequest)WebRequest.Create("https://" + address + ":4504/DataService/Bulk/" + SID);
             set.Method = "GET";
-            set.Accept = "application/json; text/json";
+            set.Accept = "application/json, text/json";
             InitializeRequest(set);
             String json = ExecuteRequest(set,Retries);
             return (BulkWrapper)BulkSerializer.ReadObject(new MemoryStream(Encoding.UTF8.GetBytes(json)));
@@ -632,11 +632,13 @@ namespace RESTclient
 
                 AsyncCallback ResponseHandler = (aresult) =>
                 {
+                    System.Diagnostics.Debug.WriteLine("Response handler begin");
                     HttpWebRequest request = (HttpWebRequest)aresult.AsyncState;
                     HttpWebResponse R = null;
                     try
                     {
                         R = (HttpWebResponse)request.EndGetResponse(aresult);
+                        System.Diagnostics.Debug.WriteLine("Got a response");
                     }
                     catch (WebException e)
                     {
@@ -644,18 +646,25 @@ namespace RESTclient
                         {
                             failhandle.Set();
                         }
+                        else
+                        {
+                            System.Diagnostics.Debug.WriteLine("Request aborted due to timeout");
+                        }
                     }
                     if (R == null)
                     {
+                        System.Diagnostics.Debug.WriteLine("Response null");
                         return;
                     }
                     if (R.ContentLength > 0 && R.StatusCode == HttpStatusCode.OK)
                     {
+                        System.Diagnostics.Debug.WriteLine("Response has payload begin reading it");
                         byte[] buffer = new byte[R.ContentLength];
                         try
                         {
                             R.GetResponseStream().BeginRead(buffer, 0, (int)R.ContentLength, (async) =>
                             {
+                                System.Diagnostics.Debug.WriteLine("got response stream read bytes");
                                 Stream s = (Stream)async.AsyncState;
                                 try
                                 {
@@ -664,7 +673,9 @@ namespace RESTclient
                                     {
                                         ReadResponse(s, buffer, (int)R.ContentLength);
                                     }
+                                    
                                     Response = Encoding.UTF8.GetString(buffer);
+                                    System.Diagnostics.Debug.WriteLine("got bytes set function result:"+ Response);
                                     //Response r = (Response)ResponseSerializer.ReadObject(new MemoryStream(buffer));
                                     //Response = r.responseData[0].ToString();
                                     s.Close();
@@ -673,6 +684,7 @@ namespace RESTclient
                                 }
                                 catch
                                 {
+                                    System.Diagnostics.Debug.WriteLine("failed to read bytes");
                                     s.Close();
                                     R.Close();
                                     failhandle.Set();
@@ -681,12 +693,14 @@ namespace RESTclient
                         }
                         catch
                         {
+                            System.Diagnostics.Debug.WriteLine("failed to get response stream");
                             R.Close();
                             failhandle.Set();
                         }
                     }
                     else
                     {
+                        System.Diagnostics.Debug.WriteLine("no response payload");
                         waithandle.Set();
                         R.Close();
                     }
@@ -701,11 +715,14 @@ namespace RESTclient
                             HttpWebRequest webRequest = (HttpWebRequest)r.AsyncState;
                             try
                             {
+                                System.Diagnostics.Debug.WriteLine("Request initiated sending payload");
                                 Stream stream = webRequest.EndGetRequestStream(r);
                                 stream.Write(payloaddata.GetBuffer(), 0, (int)payloaddata.Length);
+                                System.Diagnostics.Debug.WriteLine("payload sent, initiating wait for response");
                                 therequest.BeginGetResponse(ResponseHandler, therequest);
                                 stream.Flush();
                                 stream.Close();
+                                System.Diagnostics.Debug.WriteLine("request stream closed");
                             }
                             catch
                             {
@@ -718,7 +735,7 @@ namespace RESTclient
                     else
                     {
 
-
+                        System.Diagnostics.Debug.WriteLine("initiating wait for reponse no payload to send");
                         IAsyncResult Aresult =(IAsyncResult)therequest.BeginGetResponse(ResponseHandler, therequest);
 
                     }
