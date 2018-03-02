@@ -76,6 +76,16 @@ namespace WcfDataService
     }
 
     /// <summary>
+    /// wrapper for BulkShutdownWinmaxType
+    /// </summary>
+    [DataContract(Namespace = "WcfDataServices")]
+    public class BulkShutdownWinmaxTypeBox : Bulk
+    {
+        [DataMember]
+        public WcfDataServices.UnmanagedDataTypes.BulkShutdownWinmaxType BulkStruct;
+    }
+
+    /// <summary>
     /// wrapper for BulkPartSetupType
     /// </summary>
     [DataContract(Namespace = "WcfDataServices")]

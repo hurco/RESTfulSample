@@ -89,7 +89,15 @@ namespace WcfDataServices
         }
 
         private const byte MAX_KIN_ORDER = MAX_LOGICAL_AXIS;
-
+        [StructLayout(LayoutKind.Sequential, Pack = 1)] // a struct to pass to and from unmanaged code
+        [DataContract]
+        public struct BulkShutdownWinmaxType
+        {
+            [DataMember]
+            public bool bRestart;
+            [DataMember]
+            public bool bUserConfirm;
+        }
 
         [StructLayout(LayoutKind.Sequential, Pack = 1)] // a struct to pass to and from unmanaged code
         [DataContract]
