@@ -17,6 +17,9 @@
     },
     {
       "url": "http://machine-connect.hurco.com:4503/"
+    },
+    {
+      "url": "http://127.0.0.1:4503/"
     }
   ],
   "tags": [
@@ -77,8 +80,8 @@
               }
             }
           },
-          "405": {
-            "description": "Invalid input"
+          "500": {
+            "description": "Server Error processing request"
           }
         }
       }
@@ -113,8 +116,14 @@
               }
             }
           },
-          "400": {
-            "description": "Invalid status value"
+          "401": {
+            "description": "no token provided or token invalid or token does not have permissions for this action"
+          },
+          "403": {
+            "description": "action not supported for this endpoint"
+          },
+          "500": {
+            "description": "Error Processing request"
           }
         },
         "security": [
@@ -156,13 +165,19 @@
           "200": {
             "description": "successful operation"
           },
-          "400": {
-            "description": "Invalid status value"
+          "401": {
+            "description": "no token provided or token invalid or token does not have permissions for this action"
+          },
+          "403": {
+            "description": "action not supported for this endpoint"
+          },
+          "500": {
+            "description": "Error Processing request"
           }
         },
         "security": [
           {
-            "api_key": []
+            "TokenAuth": []
           }
         ]
       }
@@ -197,8 +212,14 @@
               }
             }
           },
-          "400": {
-            "description": "Invalid status value"
+          "401": {
+            "description": "no token provided or token invalid or token does not have permissions for this action"
+          },
+          "403": {
+            "description": "action not supported for this endpoint"
+          },
+          "500": {
+            "description": "Error Processing request"
           }
         },
         "security": [
@@ -240,8 +261,14 @@
           "200": {
             "description": "successful operation"
           },
-          "400": {
-            "description": "Invalid status value"
+          "401": {
+            "description": "no token provided or token invalid or token does not have permissions for this action"
+          },
+          "403": {
+            "description": "action not supported for this endpoint"
+          },
+          "500": {
+            "description": "Error Processing request"
           }
         },
         "security": [
@@ -281,8 +308,14 @@
               }
             }
           },
-          "400": {
-            "description": "Invalid status value"
+          "401": {
+            "description": "no token provided or token invalid or token does not have permissions for this action"
+          },
+          "403": {
+            "description": "action not supported for this endpoint"
+          },
+          "500": {
+            "description": "Error Processing request"
           }
         },
         "security": [
@@ -324,8 +357,14 @@
           "200": {
             "description": "successful operation"
           },
-          "400": {
-            "description": "Invalid status value"
+          "401": {
+            "description": "no token provided or token invalid or token does not have permissions for this action"
+          },
+          "403": {
+            "description": "action not supported for this endpoint"
+          },
+          "500": {
+            "description": "Error Processing request"
           }
         },
         "security": [
@@ -365,8 +404,14 @@
               }
             }
           },
-          "400": {
-            "description": "Invalid status value"
+          "401": {
+            "description": "no token provided or token invalid or token does not have permissions for this action"
+          },
+          "403": {
+            "description": "action not supported for this endpoint"
+          },
+          "500": {
+            "description": "Error Processing request"
           }
         },
         "security": [
@@ -408,8 +453,14 @@
           "200": {
             "description": "successful operation"
           },
-          "400": {
-            "description": "Invalid status value"
+          "401": {
+            "description": "no token provided or token invalid or token does not have permissions for this action"
+          },
+          "403": {
+            "description": "action not supported for this endpoint"
+          },
+          "500": {
+            "description": "Error Processing request"
           }
         },
         "security": [
@@ -442,8 +493,14 @@
           "200": {
             "description": "successful operation"
           },
-          "400": {
-            "description": "Invalid status value"
+          "401": {
+            "description": "no token provided or token invalid or token does not have permissions for this action"
+          },
+          "403": {
+            "description": "action not supported for this endpoint"
+          },
+          "500": {
+            "description": "Error Processing request"
           }
         },
         "security": [
@@ -485,8 +542,14 @@
           "200": {
             "description": "successful operation"
           },
-          "400": {
-            "description": "Invalid status value"
+          "401": {
+            "description": "no token provided or token invalid or token does not have permissions for this action"
+          },
+          "403": {
+            "description": "action not supported for this endpoint"
+          },
+          "500": {
+            "description": "Error Processing request"
           }
         },
         "security": [
@@ -508,8 +571,11 @@
           "200": {
             "description": "successful operation"
           },
-          "400": {
-            "description": "Invalid status value"
+          "401": {
+            "description": "no token provided or token invalid or token does not have permissions for this action"
+          },
+          "500": {
+            "description": "Error Processing request"
           }
         },
         "security": [
@@ -540,8 +606,14 @@
           "200": {
             "description": "successful operation"
           },
-          "400": {
-            "description": "Invalid status value"
+          "401": {
+            "description": "no token provided or token invalid or token does not have permissions for this action"
+          },
+          "403": {
+            "description": "action not supported for this endpoint"
+          },
+          "500": {
+            "description": "Error Processing request"
           }
         },
         "security": [
