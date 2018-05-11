@@ -50,9 +50,6 @@ namespace RESTclient
 
             // Override automatic validation of SSL server certificates.
             ServicePointManager.ServerCertificateValidationCallback = ValidateServerCertficate;
-
-
-
         }
 
         public void Shutdown()
@@ -190,15 +187,35 @@ namespace RESTclient
 
             if (success && token != "")
             {
-                Thread t = new Thread(() =>
+                callbackthread = new Thread(() =>
                 EnableCallback());
-                t.Start();
+                callbackthread.Start();
                 connected = true;
             }
 
             return success;
         }
 
+        public void RecoverCallbacks()
+        {
+            if(callbackthread!=null && callbackthread.IsAlive)
+            {
+                Abort = true;
+                callbackstream.Close();
+                callbackthread.Join();
+            }
+            connected = false;
+            Abort = false;
+            if (token != "")
+            {
+                callbackthread = new Thread(() =>
+                EnableCallback());
+                callbackthread.Start();
+                connected = true;
+            }
+        }
+        private Stream callbackStream = null;
+        private Thread callbackthread = null;
         private void EnableCallback()
         {
             if (token != "")
@@ -219,14 +236,16 @@ namespace RESTclient
                     writer = new StreamWriter(ssl);
                     writer.WriteLine(token);
                     writer.Flush();
-                    Thread t = new Thread(() => CallbackThread(ssl));
-                    t.Start();
+                    callbackStream = ssl;
+                    callbackthread = new Thread(() => CallbackThread(ssl));
+                    callbackthread.Start();
                 }
                 else
                 {
                     int x = Thread.CurrentThread.ManagedThreadId;
                     writer.WriteLine(token);
                     writer.Flush();
+                    callbackStream = client.GetStream();
                     CallbackThread(client.GetStream());
                 }
             }
@@ -266,7 +285,11 @@ namespace RESTclient
                     }
                     catch (IOException e)
                     {
-                        //things
+                        if(!Abort)
+                        {
+                            Thread t = new Thread(() => { callbackthread = null; Thread.Sleep(200); RecoverCallbacks(); });
+                            t.Start();
+                        }
                     }
                     catch (Exception ex)
                     {
