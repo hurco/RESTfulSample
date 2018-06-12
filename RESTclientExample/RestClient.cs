@@ -287,8 +287,10 @@ namespace RESTclient
                     {
                         if(!Abort)
                         {
-                            Thread t = new Thread(() => { callbackthread = null; Thread.Sleep(200); RecoverCallbacks(); });
+                            Thread t = new Thread(() => { callbackthread = null; Thread.Sleep(200); Abort = false; RecoverCallbacks(); });
                             t.Start();
+                            Abort = true;
+                            break;
                         }
                     }
                     catch (Exception ex)
