@@ -2,7 +2,7 @@
   "openapi": "3.0.0",
   "info": {
     "description": "RESTful api for third party integration with Hurco controls on port 4503 for HTTP and 4504 for HTTPS 4505 is used for callback channels. When opening callback channel STARTTLS will enable SSL, server will respond STARTTLS if accepted. If not using SSL then client should send HELLO instead, server will respond HELLO. Following this the client should send their token.",
-    "version": "1.1.0",
+    "version": "1.2.0",
     "title": "Swagger Hurco Dataservices",
     "contact": {
       "email": "support@hurco.com"
@@ -112,6 +112,37 @@
             "description": "Server Error processing request"
           }
         }
+      }
+    },
+    "/AuthService/1.2/Disconnect": {
+      "get": {
+        "tags": [
+          "Connect"
+        ],
+        "summary": "request logout for a given authentication token, this will remove permissions for the token and log it out",
+        "description": "",
+        "operationId": "logoutrequest",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "successful logout updated token permissions provided",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server Error processing request"
+          }
+        },
+        "security": [
+          {
+            "TokenAuth": []
+          }
+        ]
       }
     },
     "/DataService/Version": {
@@ -1089,7 +1120,7 @@
             "properties": {
               "BulkStruct": {
                 "type": "object",
-                "$ref": "#/components/schemas/BulkShutdownWinmaxType"
+                "$ref": "#/components/schemas/BulkShutdownSystemType"
               }
             }
           }
@@ -1182,7 +1213,7 @@
           "dwCmdId"
         ]
       },
-      "BulkShutdownWinmaxType": {
+      "BulkShutdownSystemType": {
         "type": "object",
         "properties": {
           "bRestart": {
