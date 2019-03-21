@@ -338,6 +338,12 @@ namespace RESTclient
         /// <exception cref="TimeoutException">retry count exceeded due to timeouts or other network faults</exception>
         public void Subscribe(string sid)
         {
+            Subscribe(sid, false);
+        }
+
+        /// <exception cref="TimeoutException">retry count exceeded due to timeouts or other network faults</exception>
+        public void Subscribe(string sid, bool HighFrequencySubscription)
+        {
             if (!connected)
             {
                 if (!Connect())
@@ -347,7 +353,7 @@ namespace RESTclient
             }
             HttpWebRequest subscription = (HttpWebRequest)WebRequest.Create("https://" + address + ":4504/NotificationService/Subscription/" + sid);
             subscription.Method = "POST";
-            SubscriptionCommandData command = new SubscriptionCommandData() { mode = RESTsubscription.SubscriptionMode.Callback, useEvent = false, useDatastore = true };
+            SubscriptionCommandData command = new SubscriptionCommandData() { mode = RESTsubscription.SubscriptionMode.Callback, useEvent = HighFrequencySubscription, useDatastore = true };
             MemoryStream payloaddata = new MemoryStream();
             SubscriptionSerializer.WriteObject(payloaddata, command);
             InitializeRequest(subscription, payloaddata);
