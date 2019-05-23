@@ -114,7 +114,7 @@
         }
       }
     },
-    "/AuthService/1.2/Disconnect": {
+    "/AuthService/v1.2/Disconnect": {
       "get": {
         "tags": [
           "Connect"
