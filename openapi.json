@@ -134,6 +134,12 @@
               }
             }
           },
+          "401": {
+            "description": "no token provided or token invalid or token does not have permissions for this action"
+          },
+          "403": {
+            "description": "action not supported for this endpoint"
+          },
           "500": {
             "description": "Server Error processing request"
           }
@@ -304,7 +310,7 @@
         ],
         "summary": "gets list of supported string SIDs",
         "description": "will return a Json object listing supported SIDs and if they are read only",
-        "operationId": "getstringList",
+        "operationId": "getStringList",
         "responses": {
           "200": {
             "description": "successful operation",
@@ -332,7 +338,7 @@
         ],
         "summary": "gets list of supported double SIDs",
         "description": "will return a Json object listing supported SIDs and if they are read only",
-        "operationId": "getstringList",
+        "operationId": "getDoubleList",
         "responses": {
           "200": {
             "description": "successful operation",
@@ -360,7 +366,7 @@
         ],
         "summary": "gets list of supported integer SIDs",
         "description": "will return a Json object listing supported SIDs and if they are read only",
-        "operationId": "getstringList",
+        "operationId": "getIntList",
         "responses": {
           "200": {
             "description": "successful operation",
@@ -388,7 +394,7 @@
         ],
         "summary": "gets list of supported bulk SIDs",
         "description": "will return a Json object listing supported SIDs and if they are read only",
-        "operationId": "getstringList",
+        "operationId": "getBulkList",
         "responses": {
           "200": {
             "description": "successful operation",
