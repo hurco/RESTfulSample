@@ -59,6 +59,7 @@ namespace RESTclient
             {
                 callbackstream.Close();
             }
+            Disconnect();
         }
 
         private bool ValidateServerCertficate(
@@ -85,7 +86,7 @@ namespace RESTclient
 
         ~RestClient()
         {
-            Abort = true;
+            Shutdown();
         }
 
         public String Token { get { return token; } }
@@ -111,6 +112,38 @@ namespace RESTclient
         {
             SidUpdated?.Invoke(this, new SIDUpdate() { SID = SID, SIDValue = Value });
         }
+
+        public void Disconnect()
+        {
+            HttpWebRequest get = (HttpWebRequest)WebRequest.Create("https://" + address + ":4504/AuthService/v1.2/Disconnect/");
+            get.Method = "GET";
+            get.Accept = "application/json, text/json";
+            InitializeRequest(get);
+            string value = "";
+            try
+            {
+                String response = ExecuteRequest(get, Retries);
+                connected = false;
+            }
+            catch (Exception err)
+            {
+                //might fail if older service
+            }
+        }
+
+        public void ResumeConnection(Guid token)
+        {
+            if(connected)
+            {
+                Shutdown();
+            }
+            this.token = token.ToString();
+            callbackthread = new Thread(() =>
+               EnableCallback());
+            callbackthread.Start();
+            this.connected = true;
+        }
+
         public bool Connect()
         {
             EventWaitHandle waithandle = new EventWaitHandle(false, EventResetMode.AutoReset);
