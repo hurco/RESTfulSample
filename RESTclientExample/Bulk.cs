@@ -94,6 +94,27 @@ namespace WcfDataService
       [DataMember]
       public WcfDataServices.UnmanagedDataTypes.BulkCurrentPartSetupType BulkStruct;
     }
+	
+    /// <summary>
+    /// wrapper for BulkMillNCVariable
+    /// </summary>
+    [DataContract(Namespace = "WcfDataServices")]
+    public class BulkMillNCVariableBox : Bulk
+    {
+        [DataMember]
+        public WcfDataServices.UnmanagedDataTypes.BulkMillNCVariable BulkStruct;
+    }
+
+    /// <summary>
+    /// wrapper for BulkLoadedPrograms
+    /// </summary>
+    [DataContract(Namespace = "WcfDataServices")]
+    public class BulkLoadedProgramsBox : Bulk
+    {
+        [DataMember]
+        public WcfDataServices.UnmanagedDataTypes.BulkLoadedPrograms BulkStruct;
+    }
+	
     /// <summary>
     /// base transer class.
     /// </summary>
