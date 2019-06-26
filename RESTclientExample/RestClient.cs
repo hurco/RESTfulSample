@@ -92,14 +92,14 @@ namespace RESTclient
         public String Token { get { return token; } }
 
 
-        private void ReadResponse(Stream source, byte[] buffer, int content_length)
+        private void ReadResponse(Stream source, byte[] buffer, int content_length, int already_done = 0)
         {
-            int read_so_far = 0;
+            int read_so_far = already_done;
             try
             {
                 while (read_so_far < content_length - 1)
                 {
-                    read_so_far += source.Read(buffer, read_so_far, content_length);
+                    read_so_far += source.Read(buffer, read_so_far, content_length - read_so_far);
                 }
             }
             catch (IOException err)
@@ -735,7 +735,7 @@ namespace RESTclient
                                     int bytes = s.EndRead(async);
                                     if (bytes < R.ContentLength)
                                     {
-                                        ReadResponse(s, buffer, (int)R.ContentLength);
+                                        ReadResponse(s, buffer, (int)R.ContentLength, bytes);
                                     }
                                     
                                     Response = Encoding.UTF8.GetString(buffer);
@@ -746,9 +746,9 @@ namespace RESTclient
                                     R.Close();
                                     waithandle.Set();
                                 }
-                                catch
+                                catch(Exception e)
                                 {
-                                    System.Diagnostics.Debug.WriteLine("failed to read bytes");
+                                    System.Diagnostics.Debug.WriteLine("Failed to read bytes:" + e);
                                     s.Close();
                                     R.Close();
                                     failhandle.Set();

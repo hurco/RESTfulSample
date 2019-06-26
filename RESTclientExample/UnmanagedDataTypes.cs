@@ -304,6 +304,78 @@ namespace WcfDataServices
             [DataMember]
             double XYSkewAngle;
         }
-    }
+		
+        private const int MAX_MILL_VAR_ARRAY_LENGTH = 500;
+        public enum operand_type_enum: int
+        {
+            DATA_OPERAND_TYPE,
+            INVALID_OPERAND,
+            VACANT_OPERAND,
+            NULL_OPERAND
+        }
+        [DataContract]
+        [StructLayout(LayoutKind.Sequential, Pack = 1)]
+        public struct BulkMillNCVariable
+        {
+            [DataMember]
+            public int arrayLength;
+            [DataMember]
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = MAX_MILL_VAR_ARRAY_LENGTH)]
+            public double[] operandData;
+            [DataMember]
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = MAX_MILL_VAR_ARRAY_LENGTH)]
+            public operand_type_enum[] operandType;
+            [DataMember]
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = MAX_MILL_VAR_ARRAY_LENGTH)]
+            public int[] CopyVariables;
+        }
 
+        private const int MAX_NUM_RETURNED_FILES = 16;
+        [DataContract]
+        [StructLayout(LayoutKind.Sequential, Pack = 1)]
+        public struct BulkLoadedPrograms
+        {
+            public void Init()
+            {
+                this.numLoadedFiles = 0;
+                this.fileNames = new byte[MAX_NUM_RETURNED_FILES * COMM_STRING_MAX_SIZE];
+                for (int i = 0; i < MAX_NUM_RETURNED_FILES * COMM_STRING_MAX_SIZE; i++)
+                {
+                    fileNames[i] = 0;
+                }
+            }
+            public List<string> GetLoadedPrograms()
+            {
+                List<string> names = new List<string>();
+                for (int i = 0; i < numLoadedFiles; i++)
+                {
+                    string file = "";
+                    byte[] bytes = new byte[COMM_STRING_MAX_SIZE];
+                    //Length of non-zero array
+                    int arrLength = 0;
+                    for (int j = 0; j < COMM_STRING_MAX_SIZE; j++, arrLength++)
+                    {
+                        byte ch = fileNames[j + i * COMM_STRING_MAX_SIZE];
+                        if (ch == 0)
+                            break;
+                        bytes[j] = ch;
+                    }
+                    byte[] temp = new byte[arrLength];
+                    Array.Copy(bytes, temp, arrLength);
+                    file = Encoding.ASCII.GetString(temp);
+                    names.Add(file);
+                }
+                return names;
+            }
+            [DataMember]
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = MAX_NUM_RETURNED_FILES * COMM_STRING_MAX_SIZE)]
+            public byte[] fileNames;
+            [DataMember]
+            public int numLoadedFiles;
+            [DataMember]
+            public const int maxFiles = MAX_NUM_RETURNED_FILES;
+            [DataMember]
+            public const int strMaxSize = COMM_STRING_MAX_SIZE;
+        }
+    }
 }
