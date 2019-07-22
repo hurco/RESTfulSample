@@ -114,6 +114,16 @@ namespace WcfDataService
         [DataMember]
         public WcfDataServices.UnmanagedDataTypes.BulkLoadedPrograms BulkStruct;
     }
+
+    /// <summary>
+    /// wrapper for BulkActualTopology
+    /// </summary>
+    [DataContract(Namespace = "WcfDataServices")]
+    public class BulkActualTopologyBox : Bulk
+    {
+        [DataMember]
+        public WcfDataServices.UnmanagedDataTypes.BulkActualTopology BulkStruct;
+    }
 	
     /// <summary>
     /// base transer class.

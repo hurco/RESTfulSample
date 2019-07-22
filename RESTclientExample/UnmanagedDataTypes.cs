@@ -376,6 +376,71 @@ namespace WcfDataServices
             public const int maxFiles = MAX_NUM_RETURNED_FILES;
             [DataMember]
             public const int strMaxSize = COMM_STRING_MAX_SIZE;
+
+        }
+        // SID_RT_BULK_ACT_SERVO_NETWORK_TOPOLOGY_OUTPUT
+        // Must be kept synchronized with C++ defined ActServoNetworkTopologyType in SIDSysDef.h
+        [DataContract]
+        [StructLayout(LayoutKind.Sequential, Pack = 1)]
+        public struct BulkActualTopology
+        {
+          public void Init()
+          {
+            ActNode = new ActNetworkNodeType[66];
+            foreach (var node in ActNode)
+            {
+              node.Init();
+            }
+          }
+
+          [DataMember]
+          public byte bNumOfNodes;
+
+          [DataMember]
+          public ActNetworkNodeType[] ActNode;
+        }
+
+        [DataContract]
+        [StructLayout(LayoutKind.Sequential, Pack = 1)]
+        public struct ActNetworkNodeType
+        {
+          public void Init()
+          {
+            sVer = new byte[20];
+          }
+
+          [DataMember]
+          public int bOpState;
+
+          [DataMember]
+          public ushort wCfgNode;
+
+          [DataMember]
+          public ushort wActAddress;
+
+          [DataMember]
+          public ServoDeviceCfgType deviceType;
+
+          [DataMember]
+          [MarshalAs(UnmanagedType.ByValArray, SizeConst = 20)]
+          public byte[] sVer;
+        }
+
+        public enum ServoDeviceCfgType
+        {
+          ANALOG_RMB = 0,   // 5 channel RMB
+          RESERVED_FOR_FUTURE_DEVICE = 1,   // was Yaskawa A1000 spindle drive during development
+          DIGITAL_ECAT_SLAVE_DEVICE_YAS_SGDV = 2,   // Yaskawa SGDV single channel
+          DIGITAL_ECAT_SLAVE_DEVICE_YAS_SD_SINGLE = 3,   // Yaskawa SD single channel
+          DIGITAL_ECAT_SLAVE_DEVICE_YAS_SD_DUAL = 4,   // Yaskawa SD dual channel
+          DIGITAL_ECAT_SLAVE_DEVICE_REXROTH_INDRA_MPB = 5,   // Rexroth Indra Drive MPB
+          DIGITAL_ECAT_SLAVE_DEVICE_MITSUBISHI_J4 = 6,   // Mitsubishi J4 Servo Drive single channel 
+          DIGITAL_ECAT_SLAVE_DEVICE_REXROTH_INDRA_MPM = 7,   // Rexroth Indra Dual-Drive MPM
+          DIGITAL_ECAT_SLAVE_DEVICE_ELMO_DRIVE = 8,   // Elmo Gold Dc Bell Drive (3D Print Head)
+          DIGITAL_ECAT_SLAVE_DEVICE_REXROTH_INDRA_MPH = 9,   // Rexroth Indra Dual-Drive MPH
+          DIGITAL_ECAT_SLAVE_DEVICE_HAL_EIM = 10,   //HAL EIM Encoder Interface module (3 1Vpp and 3 Biss-C interfaces)
+          DEVICE_UNKNOWN = 254, // Unknown device
+          ECAT_MASTER = 255  // Master 
         }
     }
 }
