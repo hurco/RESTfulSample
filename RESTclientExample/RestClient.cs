@@ -22,6 +22,7 @@ namespace RESTclient
         private string address = "";
 
         private string token = "";
+        private VendorAccess tokenPriveleges = 0;
 
         private bool connected = false;
         DataContractJsonSerializer DoubleSerializer = new DataContractJsonSerializer(typeof(DoubleCommandData));
@@ -38,6 +39,8 @@ namespace RESTclient
         public event EventHandler<SIDUpdate> SidUpdated;
 
         public bool IsConnected { get { return connected; } }
+
+        public bool HasPermission(VendorAccess permission) { return this.tokenPriveleges.HasFlag(permission); }
 
         public bool ReUseConnections = false;
 
@@ -119,6 +122,7 @@ namespace RESTclient
             get.Method = "GET";
             get.Accept = "application/json, text/json";
             InitializeRequest(get);
+            this.tokenPriveleges = 0;
             string value = "";
             try
             {
@@ -196,6 +200,7 @@ namespace RESTclient
                                 MemoryStream resultdata = new MemoryStream(buffer);
                                 TokenResponse result = (TokenResponse)TokenSerializer.ReadObject(resultdata);
                                 this.token = result.token;
+                                this.tokenPriveleges = result.tokenPriveleges;
                                 s.Close();
                                 R.Close();
                                 waithandle.Set();
