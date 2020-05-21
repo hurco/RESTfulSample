@@ -258,36 +258,54 @@ namespace RESTclient
         {
             if (token != "")
             {
-                EventWaitHandle waithandle = new EventWaitHandle(false, EventResetMode.AutoReset);
-                TcpClient client = new TcpClient();
-                client.Connect(address, 4505);
-                StreamWriter writer = new StreamWriter(client.GetStream());
-                StreamReader reader = new StreamReader(client.GetStream());
-                writer.WriteLine("STARTTLS");
-                writer.Flush();
-                String response = reader.ReadLine();
-                if (response == "STARTTLS")
+                bool connected = false;
+                uint retries = 0;
+                while (!connected && retries <5)
                 {
-                    SslStream ssl = new SslStream(client.GetStream(), false, ValidateServerCertficate);
+                    try
+                    {
+                        EventWaitHandle waithandle = new EventWaitHandle(false, EventResetMode.AutoReset);
+                        TcpClient client = new TcpClient();
+                        client.Connect(address, 4505);
+                        StreamWriter writer = new StreamWriter(client.GetStream());
+                        StreamReader reader = new StreamReader(client.GetStream());
+                        writer.WriteLine("STARTTLS");
+                        writer.Flush();
+                        String response = reader.ReadLine();
+                        if (response == "STARTTLS")
+                        {
+                            SslStream ssl = new SslStream(client.GetStream(), false, ValidateServerCertficate);
 
-                    ssl.AuthenticateAsClient("machine-connect.hurco.com");
-                    writer = new StreamWriter(ssl);
-                    writer.WriteLine(token);
-                    writer.Flush();
-                    callbackStream = ssl;
-                    callbackthread = new Thread(() => CallbackThread(ssl));
-                    callbackthread.Start();
+                            ssl.AuthenticateAsClient("machine-connect.hurco.com");
+                            writer = new StreamWriter(ssl);
+                            writer.WriteLine(token);
+                            writer.Flush();
+                            callbackStream = ssl;
+                            callbackthread = new Thread(() => CallbackThread(ssl));
+                            callbackthread.Start();
+                            connected = true;
+                        }
+                        else
+                        {
+                            int x = Thread.CurrentThread.ManagedThreadId;
+                            writer.WriteLine(token);
+                            writer.Flush();
+                            callbackStream = client.GetStream();
+                            CallbackThread(client.GetStream());
+                            connected = true;
+                        }
+                    }
+                    catch
+                    {
+                        connected = false;
+                        retries += 1;
+                        Thread.Sleep(150);
+
+                    }
+
                 }
-                else
-                {
-                    int x = Thread.CurrentThread.ManagedThreadId;
-                    writer.WriteLine(token);
-                    writer.Flush();
-                    callbackStream = client.GetStream();
-                    CallbackThread(client.GetStream());
-                }
+
             }
-
         }
 
         private Stream callbackstream = null;
