@@ -1149,6 +1149,57 @@
           }
         ]
       },
+      "BulkMillNCVariableBox:WcfDataServices": {
+        "description": "Notification posted to screen",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Bulk"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "BulkStruct": {
+                "type": "object",
+                "$ref": "#/components/schemas/BulkMillNCVariable"
+              }
+            }
+          }
+        ]
+      },
+      "BulkLoadedProgramsBox:WcfDataServices": {
+        "description": "Notification posted to screen",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Bulk"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "BulkStruct": {
+                "type": "object",
+                "$ref": "#/components/schemas/BulkLoadedPrograms"
+              }
+            }
+          }
+        ]
+      },
+      "BulkActualTopologyBox:WcfDataServices": {
+        "description": "Notification posted to screen",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Bulk"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "BulkStruct": {
+                "type": "object",
+                "$ref": "#/components/schemas/BulkActualTopology"
+              }
+            }
+          }
+        ]
+      },
       "BulkNotificationDataType": {
         "type": "object",
         "properties": {
@@ -1285,6 +1336,134 @@
             },
             "minItems": 16,
             "maxItems": 32
+          }
+        }
+      },
+      "BulkMillNCVariable": {
+        "type": "object",
+        "properties": {
+          "arrayLength": {
+            "type": "integer",
+            "format": "Int32"
+          },
+          "operandData": {
+            "type": "array",
+            "items": {
+              "type": "number",
+              "format": "Float64"
+            },
+            "minItems": 500,
+            "maxItems": 500
+          },
+          "operandType": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "format": "Int32,",
+              "description": "0 = valid, 1 = invalid, 2 = vacant, 3 = null",
+              "enum": [
+                0,
+                1,
+                2,
+                3
+              ]
+            },
+            "minItems": 500,
+            "maxItems": 500
+          },
+          "CopyVariables": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "format": "Int32"
+            },
+            "minItems": 500,
+            "maxItems": 500
+          }
+        }
+      },
+      "BulkLoadedPrograms": {
+        "type": "object",
+        "properties": {
+          "fileNames": {
+            "type": "array",
+            "description": "ANSI encoded string as bytes",
+            "minItems": 3200,
+            "maxItems": 3200,
+            "items": {
+              "type": "integer",
+              "format": "Int8"
+            }
+          },
+          "numLoadedFiles": {
+            "type": "integer",
+            "format": "Int32"
+          },
+          "maxFiles": {
+            "type": "integer",
+            "format": "Int32"
+          },
+          "strMaxSize": {
+            "type": "integer",
+            "format": "Int32"
+          }
+        }
+      },
+      "BulkActualTopology": {
+        "type": "object",
+        "properties": {
+          "bNumOfNodes": {
+            "type": "integer",
+            "format": "Int8"
+          },
+          "ActNode": {
+            "type": "object",
+            "$ref": "#/components/schemas/ActNetworkNodeType"
+          }
+        }
+      },
+      "ActNetworkNodeType": {
+        "type": "object",
+        "properties": {
+          "bOpState": {
+            "type": "integer",
+            "format": "Int32"
+          },
+          "wCfgNode": {
+            "type": "integer"
+          },
+          "wActAddress": {
+            "type": "integer"
+          },
+          "deviceType": {
+            "type": "integer",
+            "format": "Int32,",
+            "description": "Servo Device Cfg Type. 0 = ANALOG_RMB, 1 = RESERVED, 2 = YAS_SGDV, 3 = YAS_SD_SINGLE, 4 = YAS_SD_DUAL, 5 = REXROTH_INDRA_MPB, 6 = MITSUBISHI_J4, 7 = REXROTH_INDRA_MPM, 8 = ELMO_DRIVE, 9 = REXROTH_INDRA_MPH, 10 = HAL_EIM, 254 = DEVICE_UNKNOWN, 255 = ECAT_MASTER",
+            "enum": [
+              0,
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              254,
+              255
+            ]
+          },
+          "sVer": {
+            "type": "array",
+            "description": "ANSI encoded string as bytes",
+            "minItems": 20,
+            "maxItems": 20,
+            "items": {
+              "type": "integer",
+              "format": "Int8"
+            }
           }
         }
       },
