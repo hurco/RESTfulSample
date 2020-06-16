@@ -1183,23 +1183,6 @@
           }
         ]
       },
-      "BulkActualTopologyBox:WcfDataServices": {
-        "description": "Notification posted to screen",
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/Bulk"
-          },
-          {
-            "type": "object",
-            "properties": {
-              "BulkStruct": {
-                "type": "object",
-                "$ref": "#/components/schemas/BulkActualTopology"
-              }
-            }
-          }
-        ]
-      },
       "BulkNotificationDataType": {
         "type": "object",
         "properties": {
