@@ -9,6 +9,7 @@ using System.Runtime.Serialization.Json;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading;
+using System.Web.UI.WebControls;
 using WcfDataService;
 using WcfDataService.RESTful;
 
@@ -43,6 +44,22 @@ namespace RESTclient
         public bool HasPermission(VendorAccess permission) { return this.tokenPriveleges.HasFlag(permission); }
 
         public bool ReUseConnections = false;
+
+        public bool CanRead
+        {
+            get
+            {
+                return HasPermission(VendorAccess.Read);
+            }
+        }
+
+        public bool CanWrite
+        {
+            get
+            {
+                return HasPermission(VendorAccess.Write);
+            }
+        }
 
         private bool Abort = false;
         public RestClient(string address, string vendorID, string password)
