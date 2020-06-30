@@ -233,7 +233,7 @@ namespace WcfDataServices
             [DataMember]
             public ushort wSecond;
             [DataMember]
-            public ushort wMilliseconds;
+            public ushort wMillisecond;
         }
         [DataContract]
         [StructLayout(LayoutKind.Explicit, Pack = 1)]
