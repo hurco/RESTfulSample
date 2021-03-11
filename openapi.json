@@ -2,7 +2,7 @@
   "openapi": "3.0.0",
   "info": {
     "description": "RESTful api for third party integration with Hurco controls on port 4503 for HTTP and 4504 for HTTPS 4505 is used for callback channels. When opening callback channel STARTTLS will enable SSL, server will respond STARTTLS if accepted. If not using SSL then client should send HELLO instead, server will respond HELLO. Following this the client should send their token.",
-    "version": "1.2.0",
+    "version": "1.2.1",
     "title": "Swagger Hurco Dataservices",
     "contact": {
       "email": "support@hurco.com"
@@ -1149,40 +1149,6 @@
           }
         ]
       },
-      "BulkMillNCVariableBox:WcfDataServices": {
-        "description": "Notification posted to screen",
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/Bulk"
-          },
-          {
-            "type": "object",
-            "properties": {
-              "BulkStruct": {
-                "type": "object",
-                "$ref": "#/components/schemas/BulkMillNCVariable"
-              }
-            }
-          }
-        ]
-      },
-      "BulkLoadedProgramsBox:WcfDataServices": {
-        "description": "Notification posted to screen",
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/Bulk"
-          },
-          {
-            "type": "object",
-            "properties": {
-              "BulkStruct": {
-                "type": "object",
-                "$ref": "#/components/schemas/BulkLoadedPrograms"
-              }
-            }
-          }
-        ]
-      },
       "BulkNotificationDataType": {
         "type": "object",
         "properties": {
@@ -1319,76 +1285,6 @@
             },
             "minItems": 16,
             "maxItems": 32
-          }
-        }
-      },
-      "BulkMillNCVariable": {
-        "type": "object",
-        "properties": {
-          "arrayLength": {
-            "type": "integer",
-            "format": "Int32"
-          },
-          "operandData": {
-            "type": "array",
-            "items": {
-              "type": "number",
-              "format": "Float64"
-            },
-            "minItems": 500,
-            "maxItems": 500
-          },
-          "operandType": {
-            "type": "array",
-            "items": {
-              "type": "integer",
-              "format": "Int32,",
-              "description": "0 = valid, 1 = invalid, 2 = vacant, 3 = null",
-              "enum": [
-                0,
-                1,
-                2,
-                3
-              ]
-            },
-            "minItems": 500,
-            "maxItems": 500
-          },
-          "CopyVariables": {
-            "type": "array",
-            "items": {
-              "type": "integer",
-              "format": "Int32"
-            },
-            "minItems": 500,
-            "maxItems": 500
-          }
-        }
-      },
-      "BulkLoadedPrograms": {
-        "type": "object",
-        "properties": {
-          "fileNames": {
-            "type": "array",
-            "description": "ANSI encoded string as bytes",
-            "minItems": 3200,
-            "maxItems": 3200,
-            "items": {
-              "type": "integer",
-              "format": "Int8"
-            }
-          },
-          "numLoadedFiles": {
-            "type": "integer",
-            "format": "Int32"
-          },
-          "maxFiles": {
-            "type": "integer",
-            "format": "Int32"
-          },
-          "strMaxSize": {
-            "type": "integer",
-            "format": "Int32"
           }
         }
       },
