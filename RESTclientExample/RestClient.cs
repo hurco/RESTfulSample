@@ -9,6 +9,7 @@ using System.Runtime.Serialization.Json;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading;
+using System.Web.UI.WebControls;
 using WcfDataService;
 using WcfDataService.RESTful;
 
@@ -44,6 +45,22 @@ namespace RESTclient
 
         public bool ReUseConnections = false;
 
+        public bool CanRead
+        {
+            get
+            {
+                return HasPermission(VendorAccess.Read);
+            }
+        }
+
+        public bool CanWrite
+        {
+            get
+            {
+                return HasPermission(VendorAccess.Write);
+            }
+        }
+
         private bool Abort = false;
         public RestClient(string address, string vendorID, string password)
         {
@@ -53,6 +70,7 @@ namespace RESTclient
 
             // Override automatic validation of SSL server certificates.
             ServicePointManager.ServerCertificateValidationCallback = ValidateServerCertficate;
+            
         }
 
         public void Shutdown()
@@ -719,13 +737,13 @@ namespace RESTclient
 
                 AsyncCallback ResponseHandler = (aresult) =>
                 {
-                    System.Diagnostics.Debug.WriteLine("Response handler begin");
+                    System.Diagnostics.Debug.WriteLine(DateTime.Now + " " + DateTime.Now.Millisecond +" :Response handler begin");
                     HttpWebRequest request = (HttpWebRequest)aresult.AsyncState;
                     HttpWebResponse R = null;
                     try
                     {
                         R = (HttpWebResponse)request.EndGetResponse(aresult);
-                        System.Diagnostics.Debug.WriteLine("Got a response");
+                        System.Diagnostics.Debug.WriteLine(DateTime.Now + " " + DateTime.Now.Millisecond +" :Got a response");
                     }
                     catch (WebException e)
                     {
@@ -735,23 +753,23 @@ namespace RESTclient
                         }
                         else
                         {
-                            System.Diagnostics.Debug.WriteLine("Request aborted due to timeout");
+                            System.Diagnostics.Debug.WriteLine(DateTime.Now + " " + DateTime.Now.Millisecond +" :Request aborted due to timeout");
                         }
                     }
                     if (R == null)
                     {
-                        System.Diagnostics.Debug.WriteLine("Response null");
+                        System.Diagnostics.Debug.WriteLine(DateTime.Now + " " + DateTime.Now.Millisecond +" :Response null");
                         return;
                     }
                     if (R.ContentLength > 0 && R.StatusCode == HttpStatusCode.OK)
                     {
-                        System.Diagnostics.Debug.WriteLine("Response has payload begin reading it");
+                        System.Diagnostics.Debug.WriteLine(DateTime.Now + " " + DateTime.Now.Millisecond +" :Response has payload begin reading it");
                         byte[] buffer = new byte[R.ContentLength];
                         try
                         {
                             R.GetResponseStream().BeginRead(buffer, 0, (int)R.ContentLength, (async) =>
                             {
-                                System.Diagnostics.Debug.WriteLine("got response stream read bytes");
+                                System.Diagnostics.Debug.WriteLine(DateTime.Now + " " + DateTime.Now.Millisecond +" :got response stream read bytes");
                                 Stream s = (Stream)async.AsyncState;
                                 try
                                 {
@@ -762,7 +780,7 @@ namespace RESTclient
                                     }
                                     
                                     Response = Encoding.UTF8.GetString(buffer);
-                                    System.Diagnostics.Debug.WriteLine("got bytes set function result:"+ Response);
+                                    System.Diagnostics.Debug.WriteLine(DateTime.Now + " " + DateTime.Now.Millisecond +" :got bytes set function result:"+ Response);
                                     //Response r = (Response)ResponseSerializer.ReadObject(new MemoryStream(buffer));
                                     //Response = r.responseData[0].ToString();
                                     s.Close();
@@ -771,7 +789,7 @@ namespace RESTclient
                                 }
                                 catch(Exception e)
                                 {
-                                    System.Diagnostics.Debug.WriteLine("Failed to read bytes:" + e);
+                                    System.Diagnostics.Debug.WriteLine(DateTime.Now + " " + DateTime.Now.Millisecond +" :Failed to read bytes:" + e);
                                     s.Close();
                                     R.Close();
                                     failhandle.Set();
@@ -780,14 +798,14 @@ namespace RESTclient
                         }
                         catch
                         {
-                            System.Diagnostics.Debug.WriteLine("failed to get response stream");
+                            System.Diagnostics.Debug.WriteLine(DateTime.Now + " " + DateTime.Now.Millisecond +" :failed to get response stream");
                             R.Close();
                             failhandle.Set();
                         }
                     }
                     else
                     {
-                        System.Diagnostics.Debug.WriteLine("no response payload");
+                        System.Diagnostics.Debug.WriteLine(DateTime.Now + " " + DateTime.Now.Millisecond +" :no response payload");
                         waithandle.Set();
                         R.Close();
                     }
@@ -802,14 +820,14 @@ namespace RESTclient
                             HttpWebRequest webRequest = (HttpWebRequest)r.AsyncState;
                             try
                             {
-                                System.Diagnostics.Debug.WriteLine("Request initiated sending payload");
+                                System.Diagnostics.Debug.WriteLine(DateTime.Now + " " + DateTime.Now.Millisecond +" :Request initiated sending payload");
                                 Stream stream = webRequest.EndGetRequestStream(r);
                                 stream.Write(payloaddata.GetBuffer(), 0, (int)payloaddata.Length);
-                                System.Diagnostics.Debug.WriteLine("payload sent, initiating wait for response");
+                                System.Diagnostics.Debug.WriteLine(DateTime.Now + " " + DateTime.Now.Millisecond +" :payload sent, initiating wait for response");
                                 therequest.BeginGetResponse(ResponseHandler, therequest);
                                 stream.Flush();
                                 stream.Close();
-                                System.Diagnostics.Debug.WriteLine("request stream closed");
+                                System.Diagnostics.Debug.WriteLine(DateTime.Now + " " + DateTime.Now.Millisecond +" :request stream closed");
                             }
                             catch
                             {
@@ -822,7 +840,7 @@ namespace RESTclient
                     else
                     {
 
-                        System.Diagnostics.Debug.WriteLine("initiating wait for reponse no payload to send");
+                        System.Diagnostics.Debug.WriteLine(DateTime.Now + " " + DateTime.Now.Millisecond +" :initiating wait for reponse no payload to send");
                         IAsyncResult Aresult =(IAsyncResult)therequest.BeginGetResponse(ResponseHandler, therequest);
 
                     }
@@ -833,13 +851,13 @@ namespace RESTclient
                         {
                             therequest.Abort();
                         }
-                        System.Diagnostics.Debug.WriteLine("Request failed or timed out retrying, count="+(Retries-retries+1));
+                        System.Diagnostics.Debug.WriteLine(DateTime.Now + " " + DateTime.Now.Millisecond +" :Request failed or timed out retrying, count="+(Retries-retries+1));
                         HttpWebRequest deepCopiedWebRequest = CopyRequest(therequest);
                         Response = ExecuteRequest(deepCopiedWebRequest, --retries, payloaddata);
                     }
                     if(retries<=0)
                     {
-                        System.Diagnostics.Debug.WriteLine("Retry Count Exceeded!");
+                        System.Diagnostics.Debug.WriteLine(DateTime.Now + " " + DateTime.Now.Millisecond +" :Retry Count Exceeded!");
                         throw new TimeoutException("Retry count exceeded!");
                     }
                 }
