@@ -663,6 +663,24 @@ namespace RESTclient
 
         }
 
+        /// <exception cref="TimeoutException">retry count exceeded due to timeouts or other network faults</exception>
+        public string GetVersionNumber()
+        {
+            if (!connected)
+            {
+                if (!Connect())
+                {
+                    return "";
+                }
+            }
+            HttpWebRequest get = (HttpWebRequest)WebRequest.Create("https://" + address + ":4504/DataService/Version/");
+            get.Method = "GET";
+            get.Accept = "application/json, text/json";
+            InitializeRequest(get);
+            string value = ExecuteRequest(get, Retries);
+            return value;
+        }
+
         private void InitializeRequest(HttpWebRequest set, MemoryStream payloaddata = null)
         {
             set.ServicePoint.Expect100Continue = false;
