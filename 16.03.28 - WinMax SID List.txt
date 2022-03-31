@@ -3,10 +3,10 @@ Cycle Status:
 #define SID_RT_ALL_MOTION_STOPPED 1552035 // 0=one or more axes are moving 1=all axes are not moving
 
 Alarm Status:
-This data exists but is not centralized in the system and therefore can’t be reported through a SID at this time
+This data exists but is not centralized in the system and therefore canâ€™t be reported through a SID at this time
 
 Alarm Codes:
-This data exists but is not centralized in the system and therefore can’t be reported through a SID at this time
+This data exists but is not centralized in the system and therefore canâ€™t be reported through a SID at this time
 
 Part Counter:
 #define SID_RT_PART_COUNT  1568848 
@@ -47,6 +47,24 @@ SID_CURRENT_PROGRAM_STATUS
   PROGRAMSTATUS_COMPLETED_SUCCESSFUL = 2,
   PROGRAMSTATUS_COMPLETED_ERROR = 3,
   PROGRAMSTATUS_COMPLETED_ABORT = 4
+  
+  
+SID_RT_STATUS_PROGRAM_RUN_SUSPEND_STATE
+Alias:
+  PROGRAM_RUN_SUSPEND_STATE
+Description:  
+  Program run stopped, waiting for start cycle event to resume.
+Minimum supported software release: 
+  WinMax Mill 10.3.2
+  WinMax Lathe 11.3.3
+Valid Values:
+  0 = Not active (Not in a suspended state during a program run. Always in this state when not running a program.)
+  1 = Single Cycle
+  2 = M0 Program Stop
+  3 = M1 Optional Stop
+  4 = Interrupted
+  5 = Spindle Zero Warning  (v10 Mill Only)
+  
 
 SID_RT_ALL_MODE_JOG_ENABLE 
 Values:	0 = Jogging can only occur during manual and manual setup modes
