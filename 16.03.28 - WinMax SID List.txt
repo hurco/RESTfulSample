@@ -55,8 +55,8 @@ Alias:
 Description:  
   Program run stopped, waiting for start cycle event to resume.
 Minimum supported software release: 
-  WinMax Mill 10.3.2
-  WinMax Lathe 11.3.3
+  WinMax Mill 10.3.1
+  WinMax Lathe 11.3.2
 Valid Values:
   0 = Not active (Not in a suspended state during a program run. Always in this state when not running a program.)
   1 = Single Cycle
