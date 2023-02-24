@@ -317,6 +317,23 @@ namespace WcfDataServices
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
         public struct BulkMillNCVariable
         {
+            public void Init()
+            {
+                this.CopyVariables = new int[MAX_MILL_VAR_ARRAY_LENGTH];
+                this.operandData = new double[MAX_MILL_VAR_ARRAY_LENGTH];
+                this.operandType = new operand_type_enum[MAX_MILL_VAR_ARRAY_LENGTH];
+                Reset();
+            }
+            public void Reset()
+            {
+                this.arrayLength = 0;
+                for (int i = 0; i < MAX_MILL_VAR_ARRAY_LENGTH; i++)
+                {
+                    this.CopyVariables[i] = 0;
+                    this.operandData[i] = 0f;
+                    this.operandType[i] = operand_type_enum.VACANT_OPERAND;
+                }
+            }
             [DataMember]
             public int arrayLength;
             [DataMember]
